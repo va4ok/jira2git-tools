@@ -120,7 +120,7 @@ function onModernCopyCommitMessage(e) {
 }
 
 // issuetype
-// Issue Type JSON.parse(window.SPA_STATE['issue/full-page:PESV3-10957'].data.issue.fields)[20][1].value.name
+// Issue Type JSON.parse(window.SPA_STATE['issue/full-page:JIRA_TICKET'].data.issue.fields)[20][1].value.name
 //#endregion
 
 //#region LEGACY design
