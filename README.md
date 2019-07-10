@@ -17,19 +17,14 @@ To work with jira2git-tools [tampermonkey](https://www.tampermonkey.net/) browse
 ### Installing
 
 Open [OpenUserJS](https://openuserjs.org/scripts/va4ok/Jira_Task2Branch) page.
-
 Install Jira Task2Branch as full or minified script.
-
 Done.
 
 OR
 
-Copy user script from git page
-
+Copy user script from git page.
 Open tampermonkey plugin page in your Chrome or FireFox browser.
-
 Create new user sacript and paste copied script.
-
 Save script and done.
 
 ## Authors
