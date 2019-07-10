@@ -12,11 +12,7 @@ Click on Copy Commit Message button to copy commit message tempalte and paste on
 
 ### Prerequisites
 
-To work with jira2git-tools tampermonkey browser plugin have to be installed
-
-```
-[Tampermonkey home page](https://www.tampermonkey.net/)
-```
+To work with jira2git-tools [tampermonkey](https://www.tampermonkey.net/) browser plugin have to be installed
 
 ### Installing
 
