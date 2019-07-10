@@ -107,8 +107,8 @@ function copyLegacyBranchName() {
 }
 
 function copyCommitMessage() {
-  let parentIssueID;
-  let parentIssueSummary;
+  let parentIssueID = getLegacyParentIssueID();
+  let parentIssueSummary = getLegacyParentIssueName();
   let subTaskID = getLegacyIssueID();
   let subTaskSummary = getLegacyIssueName();
   let isBug = legacyIsBug();
@@ -132,6 +132,26 @@ function copyCommitMessage() {
 
 function isSimilarText(textA, textB) {
   return textA === textB;
+}
+
+function getLegacyParentIssueID() {
+  const issue = document.getElementById("parent_issue_summary");
+
+  if (issue) {
+    return issue.dataset.issueKey;
+  }
+
+  return "";
+}
+
+function getLegacyParentIssueName() {
+  const issue = document.getElementById("parent_issue_summary");
+
+  if (issue) {
+    return issue.getAttribute("original-title");
+  }
+
+  return "";
 }
 
 function getLegacyIssueID() {
@@ -176,7 +196,7 @@ function prepareBranchNameText(text) {
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(
     () => {
-      console.log("Copied: " + text);
+      console.log("Copied:\n" + text);
     },
     () => {
       copyToClipboardFallback();
@@ -185,7 +205,7 @@ function copyToClipboard(text) {
 }
 
 function copyToClipboardFallback(result) {
-  console.warn("Not copied: " + result);
+  console.warn("Not copied:\n" + result);
 }
 
 function getFieldValueByName(fields, fieldName) {
