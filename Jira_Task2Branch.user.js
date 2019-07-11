@@ -11,36 +11,39 @@
 const REGEXP = /[\s\[\]:\\\/\"\|\'-\.\,`\<\>]+/g;
 const MAX_LENGTH = 60;
 const DIVIDER = "-";
+const TEXT_COPY_BRANCH_NAME = "Copy Branch Name";
+const TEXT_COPY_COMMIT_MESSAGE = "Copy Commit Message";
 
-let isModernDesign = false;
+let isSPA = false;
 
 (function() {
   "use strict";
 
-  isModernDesign = !!window.SPA_STATE;
-  isModernDesign ? initModernCopyButton() : initOldStyleCopyButtons();
+  isSPA = !!window.SPA_STATE;
+  isSPA ? initSPAButtons() : initLegacyButtons();
 })();
 
 //#region MODERN design
-function copyModernBranchName() {
-  const { subTaskID, subTaskSummary } = getModerIssue();
+function copySPABranchName(e) {
+  const { subTaskID, subTaskSummary } = getSPAIssue();
 
-  let result = prepareBranchNameText(subTaskID + " " + subTaskSummary);
+  let result = formatBranchNameText(`${subTaskID} ${subTaskSummary}`);
 
+  e.stopPropagation();
   copyToClipboard(result);
 }
 
-function initModernCopyButton() {
+function initSPAButtons() {
   const titleDOM = document.querySelector("h1");
 
   if (titleDOM) {
-    const copyBranchButton = getModernButton(
-      "Copy Branch Name",
-      onCopyBranchNameButtonClick
+    const copyBranchButton = getSPAButton(
+      TEXT_COPY_BRANCH_NAME,
+      copySPABranchName
     );
-    const copyCommitButton = getModernButton(
-      "Copy Commit Message",
-      onModernCopyCommitMessage
+    const copyCommitButton = getSPAButton(
+      TEXT_COPY_COMMIT_MESSAGE,
+      onSPACopyCommitMessage
     );
 
     titleDOM.parentElement.appendChild(copyBranchButton);
@@ -48,26 +51,29 @@ function initModernCopyButton() {
   }
 }
 
-function getModernButton(text, callback) {
-  let copyButton = document.createElement("button");
+function getSPAButton(text, callback) {
+  let button = document.createElement("button");
+  let style = button.style;
 
-  copyButton.style.color = "rgb(80, 95, 121)";
-  copyButton.style.border = "none";
-  copyButton.style.background = "rgba(9, 30, 66, 0.04)";
-  copyButton.style.fontFamily =
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
-  copyButton.style.fontSize = "14px";
-  copyButton.style.cursor = "pointer";
+  style.color = "rgb(80, 95, 121)";
+  style.border = "none";
+  style.background = "rgba(9, 30, 66, 0.04)";
+  style.fontFamily =
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  style.fontSize = "14px";
+  style.cursor = "pointer";
+  style.marginRight = "5px";
 
-  copyButton.innerText = text;
-  copyButton.addEventListener("click", callback);
+  button.innerText = text;
+  button.addEventListener("click", callback);
 
-  return copyButton;
+  return button;
 }
 
-function getModerIssue() {
+function getSPAIssue() {
   let subTaskID;
   let subTaskSummary;
+  let subTaskType;
 
   for (let spa_statePropName in window.SPA_STATE) {
     if (spa_statePropName.indexOf("issue/") !== -1) {
@@ -76,13 +82,14 @@ function getModerIssue() {
 
       subTaskID = issue.key;
       subTaskSummary = getFieldValueByName(fields, "summary");
+      subTaskType = getFieldValueByName(fields, "issuetype").name;
     }
   }
 
-  return { subTaskID, subTaskSummary };
+  return { subTaskID, subTaskSummary, subTaskType };
 }
 
-function getModernParentIssue(issueID) {
+function getSPAIssueDetails(issueID) {
   const url = "/rest/graphql/1/";
 
   let query = {
@@ -97,25 +104,39 @@ function getModernParentIssue(issueID) {
   `
   };
 
-  sendPostRequest(url, JSON.stringify(query));
+  return sendPostRequest(url, query);
 }
 
-function onModernCopyCommitMessage(e) {
+function onSPACopyCommitMessage(e) {
   e.stopPropagation();
-    
-  let parentIssueID = getLegacyParentIssueID();
-  let parentIssueSummary = getLegacyParentIssueName();
-  let { subTaskID, subTaskSummary } = getModerIssue();
-  let isBug = legacyIsBug();
 
-  copyToClipboard(
-    getCommitMessage({
-      parentIssueID,
-      parentIssueSummary,
-      subTaskID,
-      subTaskSummary,
-      isBug
-    })
+  let { subTaskID, subTaskSummary, subTaskType } = getSPAIssue();
+
+  getSPAIssueDetails(subTaskID).then(
+    function({ data }) {
+      let isBug = ifBug(subTaskType.trim());
+      let parentIssue = getFieldValueByName(data.issue.fields, "parent");
+      let parentIssueID = "";
+      let parentIssueSummary = "";
+
+      if (parentIssue) {
+        parentIssueID = parentIssue.key;
+        parentIssueSummary = parentIssue.fields.summary;
+      }
+
+      copyToClipboard(
+        getCommitMessage({
+          parentIssueID,
+          parentIssueSummary,
+          subTaskID,
+          subTaskSummary,
+          isBug
+        })
+      );
+    },
+    function() {
+      notifyError("JIRA API problems");
+    }
   );
 }
 
@@ -124,7 +145,7 @@ function onModernCopyCommitMessage(e) {
 //#endregion
 
 //#region LEGACY design
-function initOldStyleCopyButtons() {
+function initLegacyButtons() {
   const buttonsBar = document.querySelector(".toolbar-split-left");
 
   if (buttonsBar) {
@@ -132,14 +153,16 @@ function initOldStyleCopyButtons() {
 
     ul.className = "toolbar-group";
     ul.appendChild(
-      createButton(onCopyBranchNameButtonClick, "Copy Branch Name")
+      createLegacyButton(copyLegacyBranchName, TEXT_COPY_BRANCH_NAME)
     );
-    ul.appendChild(createButton(onCopyCommitMessage, "Copy Commit Message"));
+    ul.appendChild(
+      createLegacyButton(onLegacyCopyCommitMessage, TEXT_COPY_COMMIT_MESSAGE)
+    );
     buttonsBar.appendChild(ul);
   }
 }
 
-function createButton(callback, text) {
+function createLegacyButton(callback, text) {
   let li = document.createElement("li");
   let a = document.createElement("a");
   let span = document.createElement("span");
@@ -156,22 +179,22 @@ function createButton(callback, text) {
   return li;
 }
 
-function onCopyCommitMessage(e) {
+function onLegacyCopyCommitMessage(e) {
   e.stopPropagation();
   copyCommitMessage();
 }
 
-function copyLegacyBranchName() {
+function copyLegacyBranchName(e) {
   const issueID = getLegacyIssueID();
   const issueName = getLegacyIssueName();
-  const result = prepareBranchNameText(issueID + " " + issueName);
+  const result = formatBranchNameText(issueID + " " + issueName);
 
+  e.stopPropagation();
   copyToClipboard(result);
 }
 
 function copyCommitMessage() {
-  let parentIssueID = getLegacyParentIssueID();
-  let parentIssueSummary = getLegacyParentIssueName();
+  let { parentIssueID, parentIssueSummary } = getLegacyParentIssue();
   let subTaskID = getLegacyIssueID();
   let subTaskSummary = getLegacyIssueName();
   let isBug = legacyIsBug();
@@ -191,24 +214,18 @@ function isSimilarText(textA, textB) {
   return textA === textB;
 }
 
-function getLegacyParentIssueID() {
-  const issue = document.getElementById("parent_issue_summary");
+function getLegacyParentIssue() {
+  const parentIssueDOM = document.getElementById("parent_issue_summary");
 
-  if (issue) {
-    return issue.dataset.issueKey;
+  let parentIssueID = "";
+  let parentIssueSummary = "";
+
+  if (parentIssueDOM) {
+    parentIssueID = parentIssueDOM.dataset.issueKey;
+    parentIssueSummary = parentIssueDOM.getAttribute("original-title");
   }
 
-  return "";
-}
-
-function getLegacyParentIssueName() {
-  const issue = document.getElementById("parent_issue_summary");
-
-  if (issue) {
-    return issue.getAttribute("original-title");
-  }
-
-  return "";
+  return { parentIssueID, parentIssueSummary };
 }
 
 function getLegacyIssueID() {
@@ -235,7 +252,7 @@ function legacyIsBug() {
   const spanDOM = document.getElementById("type-val");
 
   if (spanDOM) {
-    return spanDOM.innerText.trim().toUpperCase() === "BUG";
+    return ifBug(spanDOM.innerText.trim());
   }
 
   return false;
@@ -243,7 +260,11 @@ function legacyIsBug() {
 //#endregion
 
 //#region COMMON
-function prepareBranchNameText(text) {
+function ifBug(issueType) {
+  return issueType.toUpperCase() === "BUG";
+}
+
+function formatBranchNameText(text) {
   return text
     .trim()
     .replace(REGEXP, DIVIDER)
@@ -253,7 +274,7 @@ function prepareBranchNameText(text) {
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(
     () => {
-      console.log("Copied:\n" + text);
+      notifySuccess("Copied:\n" + text);
     },
     () => {
       copyToClipboardFallback();
@@ -262,26 +283,27 @@ function copyToClipboard(text) {
 }
 
 function copyToClipboardFallback(result) {
-  console.warn("Not copied:\n" + result);
+  notifyError("Not copied:\n" + result);
 }
 
 function getFieldValueByName(fields, fieldName) {
   let value;
 
   fields.forEach(function(field) {
-    field.forEach(function(property) {
-      if (property.key === fieldName) {
-        value = property.value;
+    if (field.key) {
+      if (field.key === fieldName) {
+        value = field.content;
       }
-    });
+    } else {
+      field.forEach(function(property) {
+        if (property.key === fieldName) {
+          value = property.value;
+        }
+      });
+    }
   });
 
   return value;
-}
-
-function onCopyBranchNameButtonClick(e) {
-  e.stopPropagation();
-  isModernDesign ? copyModernBranchName() : copyLegacyBranchName();
 }
 
 function sendPostRequest(url, data) {
@@ -289,10 +311,10 @@ function sendPostRequest(url, data) {
     const xhr = new XMLHttpRequest();
 
     xhr.open("POST", url);
-    xhr.onload = () => resolve(xhr.responseText);
+    xhr.onload = () => resolve(JSON.parse(xhr.responseText));
     xhr.onerror = () => reject(xhr.statusText);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(data);
+    xhr.send(JSON.stringify(data));
   });
 }
 
@@ -308,16 +330,25 @@ function getCommitMessage({
   if (parentIssueID && isSimilarText(subTaskSummary, parentIssueSummary)) {
     commitMessage =
       `${parentIssueID} ${subTaskID}: ${subTaskSummary}\n` +
-      ` - [${isBug ? "FIX" : "DEV"}] `;
+      `- [${isBug ? "FIX" : "DEV"}] `;
   } else if (parentIssueID) {
     commitMessage =
       `${parentIssueID}: ${parentIssueSummary} ${subTaskID}: ${subTaskSummary}\n` +
       `- [${isBug ? "FIX" : "DEV"}] `;
   } else {
-    commitMessage =
-      `${subTaskID}: ${subTaskSummary}\n` + `- [${isBug ? "FIX" : "DEV"}] `;
+    commitMessage = `${subTaskID}: ${subTaskSummary}\n- [${
+      isBug ? "FIX" : "DEV"
+    }] `;
   }
 
   return commitMessage;
+}
+
+function notifySuccess(text) {
+  console.log(text);
+}
+
+function notifyError(text) {
+  console.warn(text); // Add check console and copy manually
 }
 //#endregion
