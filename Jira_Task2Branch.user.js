@@ -8,7 +8,7 @@
 // @grant        none
 // @license      MIT
 // ==/UserScript==
-const REGEXP = /[\s\[\]:\\\/\"\|\'-\.\,`\<\>]+/g;
+const REGEXP = /[\s\[\]:\\\/\"\|\'-\.\,`<\>]+/g;
 const MAX_LENGTH = 60;
 const DIVIDER = "-";
 const TEXT_COPY_BRANCH_NAME = "Copy Branch Name";
@@ -19,13 +19,10 @@ const POPUP_TIME = 5000;
 let notificatorContainerDOM;
 let timerId;
 
-let isSPA = false;
-
 (function() {
   "use strict";
 
-  isSPA = !!window.SPA_STATE;
-  isSPA ? initSPAButtons() : initLegacyButtons();
+  !!window.SPA_STATE ? initSPAButtons() : initLegacyButtons();
 })();
 
 //#region MODERN design
@@ -401,7 +398,9 @@ function hideConainer() {
 
 function notify(text, isError) {
   const textShell = notificatorContainerDOM.querySelector("div");
-  notificatorContainerDOM.style.backgroundColor = isError ? "#a50063" : "#3dcd59";
+  notificatorContainerDOM.style.backgroundColor = isError
+    ? "#a50063"
+    : "#3dcd59";
 
   textShell.innerText = text;
   showContainer();
