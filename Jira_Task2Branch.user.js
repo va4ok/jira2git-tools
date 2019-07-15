@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      2.3
+// @version      2.4
 // @description  Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
 // @match        *://*.atlassian.net/browse/*
@@ -50,8 +50,14 @@ function initSPAButtons() {
       onSPACopyCommitMessage
     );
 
-    titleDOM.parentElement.appendChild(copyBranchButton);
-    titleDOM.parentElement.appendChild(copyCommitButton);
+    const container = titleDOM.parentElement.parentElement.parentElement;
+    const buttonContainer = document.createElement("div");
+
+    buttonContainer.style.margin = "8px";
+    buttonContainer.appendChild(copyBranchButton);
+    buttonContainer.appendChild(copyCommitButton);
+
+    container.appendChild(buttonContainer);
   }
 }
 
@@ -66,7 +72,8 @@ function getSPAButton(text, callback) {
     '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   style.fontSize = "14px";
   style.cursor = "pointer";
-  style.marginRight = "5px";
+  style.marginRight = "8px";
+  style.padding = "10px";
 
   button.innerText = text;
   button.addEventListener("click", callback);
