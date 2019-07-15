@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @description  Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
 // @match        *://*.atlassian.net/browse/*
@@ -13,6 +13,11 @@ const MAX_LENGTH = 60;
 const DIVIDER = "-";
 const TEXT_COPY_BRANCH_NAME = "Copy Branch Name";
 const TEXT_COPY_COMMIT_MESSAGE = "Copy Commit Message";
+const ANIMATION_TIME = 200;
+const POPUP_TIME = 5000;
+
+let notificatorContainerDOM;
+let timerId;
 
 let isSPA = false;
 
@@ -35,6 +40,8 @@ function copySPABranchName(e) {
 
 function initSPAButtons() {
   const titleDOM = document.querySelector("h1");
+
+  createNotificator();
 
   if (titleDOM) {
     const copyBranchButton = getSPAButton(
@@ -345,10 +352,64 @@ function getCommitMessage({
 }
 
 function notifySuccess(text) {
-  console.log(text);
+  notify(text, false);
 }
 
 function notifyError(text) {
-  console.warn(text); // Add check console and copy manually
+  const newText = `${text}
+  Please open console and try to copy manually`;
+
+  notify(newText, true);
+}
+
+function createNotificator() {
+  notificatorContainerDOM = document.createElement("div");
+  notificatorContainerDOM.style.transition = "height 1s ease-out";
+  notificatorContainerDOM.style.backgroundColor = "#fafafa";
+  notificatorContainerDOM.style.position = "fixed";
+  notificatorContainerDOM.style.top = "0";
+  notificatorContainerDOM.style.left = "0";
+  notificatorContainerDOM.style.right = "0";
+  notificatorContainerDOM.style.overflow = "hidden";
+  notificatorContainerDOM.style.height = "0";
+  notificatorContainerDOM.style.zIndex = "1000";
+
+  const text = document.createElement("div");
+  text.style.margin = "10px auto 10px";
+  text.style.width = "fit-content";
+
+  notificatorContainerDOM.appendChild(text);
+  document.body.appendChild(notificatorContainerDOM);
+}
+
+function showContainer() {
+  if (timerId) {
+    clearTimeout(timerId);
+    timerId = null;
+  }
+
+  notificatorContainerDOM.style.height = "80px";
+}
+
+function hideConainer() {
+  notificatorContainerDOM.style.height = "0";
+
+  timerId = setTimeout(() => {
+    timerId = null;
+  }, ANIMATION_TIME);
+}
+
+function notify(text, isError) {
+  const textShell = notificatorContainerDOM.querySelector("div");
+  notificatorContainerDOM.style.backgroundColor = isError ? "#a50063" : "#3dcd59";
+
+  textShell.innerText = text;
+  showContainer();
+
+  timerId = setTimeout(() => {
+    hideConainer();
+  }, POPUP_TIME);
+
+  isError ? console.warn(text) : console.log(text);
 }
 //#endregion
