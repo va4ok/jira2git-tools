@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      2.4
+// @version      2.5
 // @description  Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
 // @match        *://*.atlassian.net/browse/*
@@ -340,14 +340,14 @@ function getCommitMessage({
 
   if (parentIssueID && isSimilarText(subTaskSummary, parentIssueSummary)) {
     commitMessage =
-      `${parentIssueID} ${subTaskID}: ${subTaskSummary}\n` +
+      `${parentIssueID} ${subTaskID}: ${subTaskSummary}\n\n` +
       `- [${isBug ? "FIX" : "DEV"}] `;
   } else if (parentIssueID) {
     commitMessage =
-      `${parentIssueID}: ${parentIssueSummary} ${subTaskID}: ${subTaskSummary}\n` +
+      `${parentIssueID}: ${parentIssueSummary} ${subTaskID}: ${subTaskSummary}\n\n` +
       `- [${isBug ? "FIX" : "DEV"}] `;
   } else {
-    commitMessage = `${subTaskID}: ${subTaskSummary}\n- [${
+    commitMessage = `${subTaskID}: ${subTaskSummary}\n\n- [${
       isBug ? "FIX" : "DEV"
     }] `;
   }
@@ -392,7 +392,7 @@ function showContainer() {
     timerId = null;
   }
 
-  notificatorContainerDOM.style.height = "80px";
+  notificatorContainerDOM.style.height = "98px";
 }
 
 function hideConainer() {
