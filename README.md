@@ -30,7 +30,7 @@ Copy user script from git page.
 
 Open tampermonkey plugin page in your Chrome or FireFox browser.
 
-Create new user sacript and paste copied script.
+Create new user script and paste copied script.
 
 Save script and done.
 
