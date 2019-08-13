@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      2.6
+// @version      2.7
 // @description  Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
+// @homepage     https://openuserjs.org/scripts/va4ok
+// @source       https://github.com/va4ok/jira2git-tools
 // @match        *://*.atlassian.net/browse/*
 // @grant        none
 // @license      MIT
@@ -11,17 +13,20 @@
 const REGEXP = /[\s\[\]:\\\/\"\|\'-\.\,`<\>]+/g;
 const MAX_LENGTH = 60;
 const DIVIDER = '-';
-const TEXT_COPY_BRANCH_NAME = 'Copy Branch Name';
-const TEXT_COPY_COMMIT_MESSAGE = 'Copy Commit Message';
+const TEXT_COPY_BRANCH_NAME = 'Branch Name';
+const TEXT_COPY_COMMIT_MESSAGE = 'Commit Message';
+const ARROW_DOWN = '\u23F7';
+const ARROW_UP = '\u23F6';
 const ANIMATION_TIME = 200;
 const POPUP_TIME = 5000;
+const PREFIX_KEY = 'JiraToGitPrefix';
 const DEFAULT_PREFIXES = [
   {
     key: 'feature',
     value: 'feature',
     description:
       'Default branch type for any Jira ticket, may include backend and frontend changes. If in doubt - use this branch type. ' +
-      'CI includes: UI unit tests, UI build, shaper, backend compile, unit tests, integration tests, owasp dependency check, sonar'
+      'CI includes: UI unit tests, UI build, shaper, backend compile, unit tests, integration tests, OWASP dependency check, sonar'
   },
   {
     key: 'ui',
@@ -44,12 +49,85 @@ const DEFAULT_PREFIXES = [
     description: 'For UI auto tests. CI includes: special sonar for autotests'
   }
 ];
+const style = `<style>
+  .j2gt-notificator {
+    transition: height 1s ease-out;
+    background-color: #3dcd59;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    height: 0;
+    z-index: 1000;
+  }
 
-let notificatorContainerDOM;
+  .j2gt-notificator.error {
+    background-color: #a50063;
+  }
+
+  .j2gt-notificator div {
+    margin: 10px auto 10px;
+    width: fit-content;
+  }
+
+  .j2gt-buttons-container {
+    margin: 8px;
+    fontSize: 14px;
+    fontFamily: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: rgb(80, 95, 121);
+  }
+
+  .j2gt-buttons-container button {
+    border: none;
+    background: rgba(9, 30, 66, 0.04);
+    cursor: pointer;
+    margin-right: 8px;
+    padding: 10px;
+  }
+
+  .j2gt-dropdown {
+    position: absolute;
+    z-index: 1000;
+    top: 100px;
+    left: 8px;
+  }
+
+  .j2gt-dropdown ul {
+    padding: 4px 0;
+    background: white;
+    box-shadow: rgba(9, 30, 66, 0.13) 0px 0px 0px 1px, rgba(9, 30, 66, 0.13) 0px 4px 11px;
+    border-radius: 4px;
+    max-width: 220px;
+    list-style: none;
+  }
+
+  .j2gt-dropdown ul li {
+    padding: 8px 24px;
+    color: rgb(23, 43, 77);
+    cursor: pointer;
+  }
+
+  .j2gt-dropdown ul li:hover {
+    background: rgb(222, 235, 255);
+  }
+</style>`;
+
+let $notificatorContainer;
 let timerId;
+let branchPrefix;
+let $dropdown;
+let $buttonsContainer;
 
 (function() {
   'use strict';
+
+  const div = document.createElement('div');
+
+  createNotificator();
+  restorePrefix();
+  div.innerHTML = style;
+  document.body.appendChild(div.firstChild);
 
   !!window.SPA_STATE ? initSPAButtons() : initLegacyButtons();
 })();
@@ -67,9 +145,11 @@ function copySPABranchName(e) {
 function initSPAButtons() {
   const titleDOM = document.querySelector('h1');
 
-  createNotificator();
-
   if (titleDOM) {
+    const prefixButton = getSPAButton(
+      `${ARROW_DOWN} ${branchPrefix.value}`,
+      toggleDropDown
+    );
     const copyBranchButton = getSPAButton(
       TEXT_COPY_BRANCH_NAME,
       copySPABranchName
@@ -80,29 +160,75 @@ function initSPAButtons() {
     );
 
     const container = titleDOM.parentElement.parentElement.parentElement;
-    const buttonContainer = document.createElement('div');
+    $buttonsContainer = document.createElement('div');
+    $buttonsContainer.className = 'j2gt-buttons-container';
+    prefixButton.id = 'j2gt-prefix-button';
 
-    buttonContainer.style.margin = '8px';
-    buttonContainer.appendChild(copyBranchButton);
-    buttonContainer.appendChild(copyCommitButton);
+    $buttonsContainer.appendChild(prefixButton);
+    $buttonsContainer.appendChild(copyBranchButton);
+    $buttonsContainer.appendChild(copyCommitButton);
 
-    container.appendChild(buttonContainer);
+    container.appendChild($buttonsContainer);
   }
 }
 
-function getSPAButton(text, callback) {
-  let button = document.createElement('button');
-  let style = button.style;
+function toggleDropDown(e) {
+  e.stopPropagation();
 
-  style.color = 'rgb(80, 95, 121)';
-  style.border = 'none';
-  style.background = 'rgba(9, 30, 66, 0.04)';
-  style.fontFamily =
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  style.fontSize = '14px';
-  style.cursor = 'pointer';
-  style.marginRight = '8px';
-  style.padding = '10px';
+  if (e.target.innerText.indexOf(ARROW_DOWN) !== -1) {
+    openDropDown();
+    e.target.innerText = `${ARROW_UP} ${branchPrefix.value}`;
+  } else {
+    closeDropDown();
+    e.target.innerText = `${ARROW_DOWN} ${branchPrefix.value}`;
+  }
+}
+
+function openDropDown() {
+  if (!$dropdown) {
+    const $list = document.createElement('ul');
+
+    $dropdown = document.createElement('div');
+    $dropdown.className = 'j2gt-dropdown';
+
+    DEFAULT_PREFIXES.forEach(prefix => {
+      const $button = document.createElement('li');
+
+      $button.innerText = prefix.value;
+      $button.title = prefix.description;
+      $button.addEventListener('click', onPrefixClick);
+      $button.dataset.key = prefix.key;
+      $list.appendChild($button);
+    });
+
+    $dropdown.appendChild($list);
+  }
+
+  $buttonsContainer.appendChild($dropdown);
+}
+
+function closeDropDown() {
+  const $btn = document.getElementById('j2gt-prefix-button');
+
+  $dropdown.remove();
+  $btn.innerText = `${ARROW_DOWN} ${branchPrefix.value}`;
+}
+
+function onPrefixClick(e) {
+  e.stopPropagation();
+
+  const prefix = DEFAULT_PREFIXES.find(p => p.key === e.target.dataset.key);
+
+  if (prefix) {
+    branchPrefix = prefix;
+    savePrefix();
+  }
+
+  closeDropDown();
+}
+
+function getSPAButton(text, callback) {
+  const button = document.createElement('button');
 
   button.innerText = text;
   button.addEventListener('click', callback);
@@ -118,6 +244,9 @@ function getSPAIssue() {
   for (let spa_statePropName in window.SPA_STATE) {
     if (spa_statePropName.indexOf('issue/') !== -1) {
       const issue = window.SPA_STATE[spa_statePropName].data.issue;
+
+      if (!issue) continue;
+
       const fields = JSON.parse(issue.fields);
 
       subTaskID = issue.key;
@@ -144,7 +273,7 @@ function getSPAIssueDetails(issueID) {
   `
   };
 
-  return sendPostRequest(url, query);
+  return http.post(url, query);
 }
 
 function onSPACopyCommitMessage(e) {
@@ -189,7 +318,7 @@ function initLegacyButtons() {
   const buttonsBar = document.querySelector('.toolbar-split-left');
 
   if (buttonsBar) {
-    let ul = document.createElement('ul');
+    const ul = document.createElement('ul');
 
     ul.className = 'toolbar-group';
     ul.appendChild(
@@ -203,9 +332,9 @@ function initLegacyButtons() {
 }
 
 function createLegacyButton(callback, text) {
-  let li = document.createElement('li');
-  let a = document.createElement('a');
-  let span = document.createElement('span');
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  const span = document.createElement('span');
 
   li.className = 'toolbar-item';
   a.className = 'toolbar-trigger';
@@ -305,20 +434,12 @@ function ifBug(issueType) {
 }
 
 function formatBranchNameText(text) {
-  const prefix = getBranchPrefix();
-
-  let result = text
+  const result = text
     .trim()
     .replace(REGEXP, DIVIDER)
-    .slice(0, MAX_LENGTH - (prefix.length + 1)); // +1 for slash
+    .slice(0, MAX_LENGTH - (branchPrefix.value.length + 1)); // +1 for slash
 
-  return `${prefix}/${result}`;
-}
-
-function getBranchPrefix() {
-  // TODO read user prefered prefix
-  // TODO load user defined prefexies
-  return DEFAULT_PREFIXES.find(e => e.key === 'feature').value;
+  return `${branchPrefix.value}/${result}`;
 }
 
 function copyToClipboard(text) {
@@ -368,6 +489,10 @@ function sendPostRequest(url, data) {
   });
 }
 
+const http = {
+  post: sendPostRequest
+};
+
 function getCommitMessage({
   parentIssueID,
   parentIssueSummary,
@@ -406,23 +531,12 @@ function notifyError(text) {
 }
 
 function createNotificator() {
-  notificatorContainerDOM = document.createElement('div');
-  notificatorContainerDOM.style.transition = 'height 1s ease-out';
-  notificatorContainerDOM.style.backgroundColor = '#fafafa';
-  notificatorContainerDOM.style.position = 'fixed';
-  notificatorContainerDOM.style.top = '0';
-  notificatorContainerDOM.style.left = '0';
-  notificatorContainerDOM.style.right = '0';
-  notificatorContainerDOM.style.overflow = 'hidden';
-  notificatorContainerDOM.style.height = '0';
-  notificatorContainerDOM.style.zIndex = '1000';
-
   const text = document.createElement('div');
-  text.style.margin = '10px auto 10px';
-  text.style.width = 'fit-content';
 
-  notificatorContainerDOM.appendChild(text);
-  document.body.appendChild(notificatorContainerDOM);
+  $notificatorContainer = document.createElement('div');
+  $notificatorContainer.className = 'j2gt-notificator';
+  $notificatorContainer.appendChild(text);
+  document.body.appendChild($notificatorContainer);
 }
 
 function showContainer() {
@@ -431,11 +545,11 @@ function showContainer() {
     timerId = null;
   }
 
-  notificatorContainerDOM.style.height = '98px';
+  $notificatorContainer.style.height = '98px';
 }
 
-function hideConainer() {
-  notificatorContainerDOM.style.height = '0';
+function hideContainer() {
+  $notificatorContainer.style.height = '0';
 
   timerId = setTimeout(() => {
     timerId = null;
@@ -443,18 +557,34 @@ function hideConainer() {
 }
 
 function notify(text, isError) {
-  const textShell = notificatorContainerDOM.querySelector('div');
-  notificatorContainerDOM.style.backgroundColor = isError
-    ? '#a50063'
-    : '#3dcd59';
+  const textShell = $notificatorContainer.querySelector('div');
+
+  if (isError) {
+    $notificatorContainer.classList.contains('error') ||
+      $notificatorContainer.classList.add('error');
+  } else {
+    $notificatorContainer.classList.remove('error');
+  }
 
   textShell.innerText = text;
   showContainer();
 
   timerId = setTimeout(() => {
-    hideConainer();
+    hideContainer();
   }, POPUP_TIME);
 
   isError ? console.warn(text) : console.log(text);
+}
+
+function savePrefix() {
+  localStorage.setItem(PREFIX_KEY, JSON.stringify(branchPrefix));
+}
+
+function restorePrefix() {
+  const restoredPrefix = localStorage.getItem(PREFIX_KEY);
+
+  branchPrefix = restoredPrefix
+    ? JSON.parse(restoredPrefix)
+    : DEFAULT_PREFIXES[0];
 }
 //#endregion
