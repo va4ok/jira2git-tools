@@ -8,7 +8,7 @@ New buttons (Copy Branch Name and Copy Commit Message) will appears on issue det
 
 Click on Copy Branch Name button to copy branch name and paste one into new created brach as name.
 
-Click on Copy Commit Message button to copy commit message tempalte and paste one into description field on commit.
+Click on Copy Commit Message button to copy commit message template and paste one into description field on commit.
 
 ### Prerequisites
 
