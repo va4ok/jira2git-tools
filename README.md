@@ -38,6 +38,10 @@ Save script and done.
 
 * **Oleg Vaka** - *Initial work* - [va4ok](https://github.com/va4ok)
 
+## Contributors
+
+* **Nikolay Borzov** - [nikolay-borzov](https://github.com/nikolay-borzov)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
