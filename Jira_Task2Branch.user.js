@@ -242,8 +242,10 @@ function getSPAIssue() {
   let subTaskType;
 
   for (let spa_statePropName in window.SPA_STATE) {
-    if (spa_statePropName.indexOf('issue/') !== -1) {
-      const issue = window.SPA_STATE[spa_statePropName].data.issue;
+    if (spa_statePropName.indexOf('ISSUE') !== -1) {
+      const issueObject = window.SPA_STATE[spa_statePropName];
+      const issueKey = Object.keys(issueObject).pop();
+      const issue = issueObject[issueKey].data;
 
       if (!issue) continue;
 
