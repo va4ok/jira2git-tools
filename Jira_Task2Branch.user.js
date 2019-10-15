@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      2.7
+// @version      2.8
 // @description  Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
 // @homepage     https://openuserjs.org/scripts/va4ok
