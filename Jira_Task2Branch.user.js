@@ -79,11 +79,27 @@ const style = `<style>
   }
 
   .j2gt-buttons-container button {
-    border: none;
+    border: none !important;
+    font-size: 14px;
+    color: rgb(80, 95, 121);
     background: rgba(9, 30, 66, 0.04);
     cursor: pointer;
     margin-right: 8px;
-    padding: 10px;
+    padding: 0 10px;
+    line-height: 32px;
+    border-radius: 3px;
+    transition: background 0.1s ease-out 0s, box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38) 0s;
+  }
+
+  .j2gt-buttons-container button:hover {
+    color: rgb(80, 95, 121);
+    background: rgba(9, 30, 66, 0.08);
+  }
+
+  .j2gt-buttons-container button:active {
+    color: rgb(0, 82, 204);
+    background: rgba(179, 212, 255, 0.6);
+    outline: none !important;
   }
 
   .j2gt-dropdown {
