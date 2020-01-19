@@ -72,15 +72,18 @@ const style = `<style>
   }
 
   .j2gt-buttons-container {
+    display: flex;
     margin: 8px;
-    fontSize: 14px;
-    fontFamily: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: rgb(80, 95, 121);
   }
 
   .j2gt-buttons-container button {
+    display: inline-flex;
+    align-items: center;
     border: none !important;
-    font-size: 14px;
+    font-size: inherit;
     color: rgb(80, 95, 121);
     background: rgba(9, 30, 66, 0.04);
     cursor: pointer;
@@ -100,6 +103,10 @@ const style = `<style>
     color: rgb(0, 82, 204);
     background: rgba(179, 212, 255, 0.6);
     outline: none !important;
+  }
+
+  .j2gt-buttons-icon {
+    margin-right: 4px;
   }
 
   .j2gt-dropdown {
@@ -166,14 +173,18 @@ function initSPAButtons() {
       `${ARROW_DOWN} ${branchPrefix.value}`,
       toggleDropDown
     );
+
     const copyBranchButton = getSPAButton(
       TEXT_COPY_BRANCH_NAME,
       copySPABranchName
     );
+    copyBranchButton.insertBefore(getCopyIcon(), copyBranchButton.firstChild);
+
     const copyCommitButton = getSPAButton(
       TEXT_COPY_COMMIT_MESSAGE,
       onSPACopyCommitMessage
     );
+    copyCommitButton.insertBefore(getCopyIcon(), copyCommitButton.firstChild);
 
     const container = titleDOM.parentElement.parentElement.parentElement;
     $buttonsContainer = document.createElement('div');
@@ -241,6 +252,31 @@ function onPrefixClick(e) {
   }
 
   closeDropDown();
+}
+
+function getCopyIcon() {
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.setAttribute('width', '24');
+  icon.setAttribute('height', '24');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('focusable', 'false');
+  icon.setAttribute('role', 'presentation');
+  icon.classList.add('j2gt-buttons-icon')
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('fill', 'currentColor');
+
+  const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path1.setAttribute('d', 'M10 19h8V8h-8v11zM8 7.992C8 6.892 8.902 6 10.009 6h7.982C19.101 6 20 6.893 20 7.992v11.016c0 1.1-.902 1.992-2.009 1.992H10.01A2.001 2.001 0 0 1 8 19.008V7.992z"></path><path d="M5 16V4.992C5 3.892 5.902 3 7.009 3H15v13H5zm2 0h8V5H7v11z');
+
+  const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path2.setAttribute('d', 'M5 16V4.992C5 3.892 5.902 3 7.009 3H15v13H5zm2 0h8V5H7v11z');
+
+  g.appendChild(path1);
+  g.appendChild(path2);
+  icon.appendChild(g);
+
+  return icon;
 }
 
 function getSPAButton(text, callback) {
