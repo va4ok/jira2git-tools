@@ -112,7 +112,7 @@ const style = `<style>
   .j2gt-dropdown {
     position: absolute;
     z-index: 1000;
-    top: 100px;
+    top: 90px;
     left: 8px;
   }
 
