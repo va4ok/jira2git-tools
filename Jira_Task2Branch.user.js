@@ -10,7 +10,7 @@
 // @grant        none
 // @license      MIT
 // ==/UserScript==
-const REGEXP = /[\s\[\]:\\\/\"\|\'-\.\,`<\>]+/g;
+const REGEXP = /[\s\[\]\\\-/:"“`'|.,<>#~*?^]+/g;
 const MAX_LENGTH = 60;
 const DIVIDER = '-';
 const TEXT_COPY_BRANCH_NAME = 'Branch Name';
