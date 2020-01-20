@@ -51,8 +51,12 @@ const DEFAULT_PREFIXES = [
 ];
 const style = `<style>
   .j2gt-notificator {
+    display: flex;
+    align-items: center;
     transition: height 1s ease-out;
     background-color: #3dcd59;
+    color: #fff;
+    font-weight: bold;
     position: fixed;
     top: 0;
     left: 0;
