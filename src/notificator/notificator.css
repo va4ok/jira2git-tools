@@ -1,0 +1,24 @@
+.j2gt-notificator {
+    display: flex;
+    align-items: center;
+    transition: height 1s ease-out;
+    background-color: #3dcd59;
+    color: #fff;
+    font-weight: bold;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    height: 0;
+    z-index: 1000;
+}
+
+.j2gt-notificator.error {
+    background-color: #a50063;
+}
+
+.j2gt-notificator div {
+    margin: 10px auto 10px;
+    width: fit-content;
+}

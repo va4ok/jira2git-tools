@@ -10,71 +10,18 @@
 // @grant        none
 // @license      MIT
 // ==/UserScript==
-const REGEXP = /[\s\[\]\\\-/:"“`'|.,<>#~*?^]+/g;
-const MAX_LENGTH = 60;
-const DIVIDER = '-';
-const TEXT_COPY_BRANCH_NAME = 'Branch Name';
-const TEXT_COPY_COMMIT_MESSAGE = 'Commit Message';
-const ARROW_DOWN = '\u23F7';
-const ARROW_UP = '\u23F6';
-const ANIMATION_TIME = 200;
-const POPUP_TIME = 5000;
-const PREFIX_KEY = 'JiraToGitPrefix';
-const DEFAULT_PREFIXES = [
-  {
-    key: 'feature',
-    value: 'feature',
-    description:
-      'Default branch type for any Jira ticket, may include backend and frontend changes. If in doubt - use this branch type. ' +
-      'CI includes: UI unit tests, UI build, shaper, backend compile, unit tests, integration tests, OWASP dependency check, sonar'
-  },
-  {
-    key: 'ui',
-    value: 'ui',
-    description: 'For UI only changes. CI includes: UI unit tests, UI build'
-  },
-  {
-    key: 'jenkins',
-    value: 'jenkins',
-    description: 'For changes in Jenkins pipelines. CI includes: TBD'
-  },
-  {
-    key: 'gmp',
-    value: 'gmp',
-    description: 'For UI only changes. CI includes: UI unit tests, UI build'
-  },
-  {
-    key: 'autotest',
-    value: 'autotest',
-    description: 'For UI auto tests. CI includes: special sonar for autotests'
-  }
-];
+// const REGEXP = /[\s\[\]\\\-/:"“`'|.,<>#~*?^]+/g;
+// const MAX_LENGTH = 60;
+// const DIVIDER = '-';
+// const TEXT_COPY_BRANCH_NAME = 'Branch Name';
+// const TEXT_COPY_COMMIT_MESSAGE = 'Commit Message';
+// const ARROW_DOWN = '\u23F7';
+// const ARROW_UP = '\u23F6';
+// const ANIMATION_TIME = 200;
+// const POPUP_TIME = 5000;
+// const PREFIX_KEY = 'JiraToGitPrefix';
+// const DEFAULT_PREFIXES =
 const style = `<style>
-  .j2gt-notificator {
-    display: flex;
-    align-items: center;
-    transition: height 1s ease-out;
-    background-color: #3dcd59;
-    color: #fff;
-    font-weight: bold;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    overflow: hidden;
-    height: 0;
-    z-index: 1000;
-  }
-
-  .j2gt-notificator.error {
-    background-color: #a50063;
-  }
-
-  .j2gt-notificator div {
-    margin: 10px auto 10px;
-    width: fit-content;
-  }
-
   .j2gt-buttons-container {
     display: flex;
     margin: 8px;
@@ -123,7 +70,7 @@ const style = `<style>
   .j2gt-dropdown ul {
     padding: 4px 0;
     background: white;
-    box-shadow: rgba(9, 30, 66, 0.13) 0px 0px 0px 1px, rgba(9, 30, 66, 0.13) 0px 4px 11px;
+    box-shadow: rgba(9, 30, 66, 0.13) 0 0 0 1px, rgba(9, 30, 66, 0.13) 0 4px 11px;
     border-radius: 4px;
     max-width: 220px;
     list-style: none;
@@ -140,28 +87,28 @@ const style = `<style>
   }
 </style>`;
 
-let $notificatorContainer;
-let timerId;
-let branchPrefix;
+// let $notificatorContainer;
+// let timerId;
+// let branchPrefix;
 let $dropdown;
 let $buttonsContainer;
 
-(function() {
-  'use strict';
-
-  const div = document.createElement('div');
-
-  createNotificator();
-  restorePrefix();
-  div.innerHTML = style;
-  document.body.appendChild(div.firstChild);
-
-  !!window.SPA_STATE ? initSPAButtons() : initLegacyButtons();
-})();
+// (function() {
+//   'use strict';
+//
+//   const div = document.createElement('div');
+//
+//   createNotificator();
+//   restorePrefix();
+//   div.innerHTML = style;
+//   document.body.appendChild(div.firstChild);
+//
+//   !!window.SPA_STATE ? initSPAButtons() : initLegacyButtons();
+// })();
 
 //#region MODERN design
 function copySPABranchName(e) {
-  const { subTaskID, subTaskSummary } = getSPAIssue();
+  const {subTaskID, subTaskSummary} = getSPAIssue();
 
   let result = formatBranchNameText(`${subTaskID} ${subTaskSummary}`);
 
@@ -313,7 +260,7 @@ function getSPAIssue() {
     }
   }
 
-  return { subTaskID, subTaskSummary, subTaskType };
+  return {subTaskID, subTaskSummary, subTaskType};
 }
 
 function getSPAIssueDetails(issueID) {
@@ -337,10 +284,10 @@ function getSPAIssueDetails(issueID) {
 function onSPACopyCommitMessage(e) {
   e.stopPropagation();
 
-  let { subTaskID, subTaskSummary, subTaskType } = getSPAIssue();
+  let {subTaskID, subTaskSummary, subTaskType} = getSPAIssue();
 
   getSPAIssueDetails(subTaskID).then(
-    function({ data }) {
+    function ({data}) {
       let isBug = ifBug(subTaskType.trim());
       let parentIssue = getFieldValueByName(data.issue.fields, 'parent');
       let parentIssueID = '';
@@ -361,7 +308,7 @@ function onSPACopyCommitMessage(e) {
         })
       );
     },
-    function() {
+    function () {
       notifyError('JIRA API problems');
     }
   );
@@ -372,133 +319,135 @@ function onSPACopyCommitMessage(e) {
 //#endregion
 
 //#region LEGACY design
-function initLegacyButtons() {
-  const buttonsBar = document.querySelector('.toolbar-split-left');
 
-  if (buttonsBar) {
-    const ul = document.createElement('ul');
+// function initLegacyButtons() {
+//   const buttonsBar = document.querySelector('.toolbar-split-left');
+//
+//   if (buttonsBar) {
+//     const ul = document.createElement('ul');
+//
+//     ul.className = 'toolbar-group';
+//     ul.appendChild(
+//       createLegacyButton(copyLegacyBranchName, TEXT_COPY_BRANCH_NAME)
+//     );
+//     ul.appendChild(
+//       createLegacyButton(onLegacyCopyCommitMessage, TEXT_COPY_COMMIT_MESSAGE)
+//     );
+//     buttonsBar.appendChild(ul);
+//   }
+// }
 
-    ul.className = 'toolbar-group';
-    ul.appendChild(
-      createLegacyButton(copyLegacyBranchName, TEXT_COPY_BRANCH_NAME)
-    );
-    ul.appendChild(
-      createLegacyButton(onLegacyCopyCommitMessage, TEXT_COPY_COMMIT_MESSAGE)
-    );
-    buttonsBar.appendChild(ul);
-  }
-}
+// function createLegacyButton(callback, text) {
+//   const li = document.createElement('li');
+//   const a = document.createElement('a');
+//   const span = document.createElement('span');
+//
+//   li.className = 'toolbar-item';
+//   a.className = 'toolbar-trigger';
+//   a.addEventListener('click', callback);
+//   span.className = 'trigger-label';
+//   span.innerText = text;
+//
+//   a.appendChild(span);
+//   li.appendChild(a);
+//
+//   return li;
+// }
 
-function createLegacyButton(callback, text) {
-  const li = document.createElement('li');
-  const a = document.createElement('a');
-  const span = document.createElement('span');
+// function onLegacyCopyCommitMessage(e) {
+//   e.stopPropagation();
+//   copyCommitMessage();
+// }
 
-  li.className = 'toolbar-item';
-  a.className = 'toolbar-trigger';
-  a.addEventListener('click', callback);
-  span.className = 'trigger-label';
-  span.innerText = text;
+// function copyLegacyBranchName(e) {
+//   const issueID = getLegacyIssueID();
+//   const issueName = getLegacyIssueName();
+//   const result = formatBranchNameText(issueID + ' ' + issueName);
+//
+//   e.stopPropagation();
+//   copyToClipboard(result);
+// }
 
-  a.appendChild(span);
-  li.appendChild(a);
+// function copyCommitMessage() {
+//   let {parentIssueID, parentIssueSummary} = getLegacyParentIssue();
+//   let subTaskID = getLegacyIssueID();
+//   let subTaskSummary = getLegacyIssueName();
+//   let isBug = legacyIsBug();
+//
+//   copyToClipboard(
+//     getCommitMessage({
+//       parentIssueID,
+//       parentIssueSummary,
+//       subTaskID,
+//       subTaskSummary,
+//       isBug
+//     })
+//   );
+// }
 
-  return li;
-}
+// function isSimilarText(textA, textB) {
+//   return textA === textB;
+// }
 
-function onLegacyCopyCommitMessage(e) {
-  e.stopPropagation();
-  copyCommitMessage();
-}
+// function getLegacyParentIssue() {
+//   const parentIssueDOM = document.getElementById('parent_issue_summary');
+//
+//   let parentIssueID = '';
+//   let parentIssueSummary = '';
+//
+//   if (parentIssueDOM) {
+//     parentIssueID = parentIssueDOM.dataset.issueKey;
+//     parentIssueSummary = parentIssueDOM.getAttribute('original-title');
+//   }
+//
+//   return {parentIssueID, parentIssueSummary};
+// }
 
-function copyLegacyBranchName(e) {
-  const issueID = getLegacyIssueID();
-  const issueName = getLegacyIssueName();
-  const result = formatBranchNameText(issueID + ' ' + issueName);
+// function getLegacyIssueID() {
+//   const issueIDDOM = document.getElementById('key-val');
+//
+//   if (issueIDDOM) {
+//     return issueIDDOM.innerText;
+//   } else {
+//     throw new Error("Can't read issue ID");
+//   }
+// }
 
-  e.stopPropagation();
-  copyToClipboard(result);
-}
+// function getLegacyIssueName() {
+//   const issueNameDOM = document.getElementById('summary-val');
+//
+//   if (issueNameDOM) {
+//     return issueNameDOM.innerText;
+//   } else {
+//     throw new Error("Can't read issue title");
+//   }
+// }
 
-function copyCommitMessage() {
-  let { parentIssueID, parentIssueSummary } = getLegacyParentIssue();
-  let subTaskID = getLegacyIssueID();
-  let subTaskSummary = getLegacyIssueName();
-  let isBug = legacyIsBug();
+// function legacyIsBug() {
+//   const spanDOM = document.getElementById('type-val');
+//
+//   if (spanDOM) {
+//     return ifBug(spanDOM.innerText.trim());
+//   }
+//
+//   return false;
+// }
 
-  copyToClipboard(
-    getCommitMessage({
-      parentIssueID,
-      parentIssueSummary,
-      subTaskID,
-      subTaskSummary,
-      isBug
-    })
-  );
-}
-
-function isSimilarText(textA, textB) {
-  return textA === textB;
-}
-
-function getLegacyParentIssue() {
-  const parentIssueDOM = document.getElementById('parent_issue_summary');
-
-  let parentIssueID = '';
-  let parentIssueSummary = '';
-
-  if (parentIssueDOM) {
-    parentIssueID = parentIssueDOM.dataset.issueKey;
-    parentIssueSummary = parentIssueDOM.getAttribute('original-title');
-  }
-
-  return { parentIssueID, parentIssueSummary };
-}
-
-function getLegacyIssueID() {
-  const issueIDDOM = document.getElementById('key-val');
-
-  if (issueIDDOM) {
-    return issueIDDOM.innerText;
-  } else {
-    throw new Error("Can't read issue ID");
-  }
-}
-
-function getLegacyIssueName() {
-  const issueNameDOM = document.getElementById('summary-val');
-
-  if (issueNameDOM) {
-    return issueNameDOM.innerText;
-  } else {
-    throw new Error("Can't read issue title");
-  }
-}
-
-function legacyIsBug() {
-  const spanDOM = document.getElementById('type-val');
-
-  if (spanDOM) {
-    return ifBug(spanDOM.innerText.trim());
-  }
-
-  return false;
-}
 //#endregion
 
 //#region COMMON
-function ifBug(issueType) {
-  return issueType.toUpperCase() === 'BUG';
-}
+// function ifBug(issueType) {
+//   return issueType.toUpperCase() === 'BUG';
+// }
 
-function formatBranchNameText(text) {
-  const result = text
-    .trim()
-    .replace(REGEXP, DIVIDER)
-    .slice(0, MAX_LENGTH - (branchPrefix.value.length + 1)); // +1 for slash
-
-  return `${branchPrefix.value}/${result}`;
-}
+// function formatBranchNameText(text) {
+//   const result = text
+//     .trim()
+//     .replace(REGEXP, DIVIDER)
+//     .slice(0, MAX_LENGTH - (branchPrefix.value.length + 1)); // +1 for slash
+//
+//   return `${branchPrefix.value}/${result}`;
+// }
 
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(
@@ -518,13 +467,13 @@ function copyToClipboardFallback(result) {
 function getFieldValueByName(fields, fieldName) {
   let value;
 
-  fields.forEach(function(field) {
+  fields.forEach(function (field) {
     if (field.key) {
       if (field.key === fieldName) {
         value = field.content;
       }
     } else {
-      field.forEach(function(property) {
+      field.forEach(function (property) {
         if (property.key === fieldName) {
           value = property.value;
         }
@@ -552,12 +501,12 @@ const http = {
 };
 
 function getCommitMessage({
-  parentIssueID,
-  parentIssueSummary,
-  subTaskID,
-  subTaskSummary,
-  isBug
-}) {
+                            parentIssueID,
+                            parentIssueSummary,
+                            subTaskID,
+                            subTaskSummary,
+                            isBug
+                          }) {
   let commitMessage;
 
   if (parentIssueID && isSimilarText(subTaskSummary, parentIssueSummary)) {
@@ -577,72 +526,73 @@ function getCommitMessage({
   return commitMessage;
 }
 
-function notifySuccess(text) {
-  notify(text, false);
-}
+// function notifySuccess(text) {
+//   notify(text, false);
+// }
 
-function notifyError(text) {
-  const newText = `${text}
-  Please open console and try to copy manually`;
+// function notifyError(text) {
+//   const newText = `${text}
+//   Please open console and try to copy manually`;
+//
+//   notify(newText, true);
+// }
 
-  notify(newText, true);
-}
+// function createNotificator() {
+//   const text = document.createElement('div');
+//
+//   $notificatorContainer = document.createElement('div');
+//   $notificatorContainer.className = 'j2gt-notificator';
+//   $notificatorContainer.appendChild(text);
+//   document.body.appendChild($notificatorContainer);
+// }
 
-function createNotificator() {
-  const text = document.createElement('div');
+// function showContainer() {
+//   if (timerId) {
+//     clearTimeout(timerId);
+//     timerId = null;
+//   }
+//
+//   $notificatorContainer.style.height = '98px';
+// }
 
-  $notificatorContainer = document.createElement('div');
-  $notificatorContainer.className = 'j2gt-notificator';
-  $notificatorContainer.appendChild(text);
-  document.body.appendChild($notificatorContainer);
-}
+// function hideContainer() {
+//   $notificatorContainer.style.height = '0';
+//
+//   timerId = setTimeout(() => {
+//     timerId = null;
+//   }, ANIMATION_TIME);
+// }
 
-function showContainer() {
-  if (timerId) {
-    clearTimeout(timerId);
-    timerId = null;
-  }
+// function notify(text, isError) {
+//   const textShell = $notificatorContainer.querySelector('div');
+//
+//   if (isError) {
+//     $notificatorContainer.classList.contains('error') ||
+//     $notificatorContainer.classList.add('error');
+//   } else {
+//     $notificatorContainer.classList.remove('error');
+//   }
+//
+//   textShell.innerText = text;
+//   showContainer();
+//
+//   timerId = setTimeout(() => {
+//     hideContainer();
+//   }, POPUP_TIME);
+//
+//   isError ? console.warn(text) : console.log(text);
+// }
 
-  $notificatorContainer.style.height = '98px';
-}
+// function savePrefix() {
+//   localStorage.setItem(PREFIX_KEY, JSON.stringify(branchPrefix));
+// }
 
-function hideContainer() {
-  $notificatorContainer.style.height = '0';
+// function restorePrefix() {
+//   const restoredPrefix = localStorage.getItem(PREFIX_KEY);
+//
+//   branchPrefix = restoredPrefix
+//     ? JSON.parse(restoredPrefix)
+//     : DEFAULT_PREFIXES[0];
+// }
 
-  timerId = setTimeout(() => {
-    timerId = null;
-  }, ANIMATION_TIME);
-}
-
-function notify(text, isError) {
-  const textShell = $notificatorContainer.querySelector('div');
-
-  if (isError) {
-    $notificatorContainer.classList.contains('error') ||
-      $notificatorContainer.classList.add('error');
-  } else {
-    $notificatorContainer.classList.remove('error');
-  }
-
-  textShell.innerText = text;
-  showContainer();
-
-  timerId = setTimeout(() => {
-    hideContainer();
-  }, POPUP_TIME);
-
-  isError ? console.warn(text) : console.log(text);
-}
-
-function savePrefix() {
-  localStorage.setItem(PREFIX_KEY, JSON.stringify(branchPrefix));
-}
-
-function restorePrefix() {
-  const restoredPrefix = localStorage.getItem(PREFIX_KEY);
-
-  branchPrefix = restoredPrefix
-    ? JSON.parse(restoredPrefix)
-    : DEFAULT_PREFIXES[0];
-}
 //#endregion
