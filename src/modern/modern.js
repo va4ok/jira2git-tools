@@ -10,7 +10,7 @@ import { Utils } from '../utils/utils.js';
 import { http } from '../utils/http.js';
 
 export class Modern {
-  static dropdown = new DropDown();
+  // TODO remove static field
   static buttonsContainer;
 
   static getCopyIcon() {
@@ -46,7 +46,10 @@ export class Modern {
     const button = document.createElement('button');
 
     button.innerText = text;
-    button.addEventListener('click', callback);
+
+    if (callback) {
+      button.addEventListener('click', callback);
+    }
 
     return button;
   }
@@ -153,30 +156,21 @@ export class Modern {
     const titleDOM = document.querySelector('h1');
 
     if (titleDOM) {
-      const prefixButton = Modern.getButton(
-        `${Text.ARROW_DOWN} ${Prefix.get().value}`,
-        Modern.dropdown.toggle
-      );
-
-      const copyBranchButton = Modern.getButton(
-        Text.COPY_BRANCH_NAME,
-        Modern.copyBranchName
-      );
+      const prefixButton = Modern.getButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
+      const copyBranchButton = Modern.getButton(Text.COPY_BRANCH_NAME, Modern.copyBranchName);
+      const copyCommitButton = Modern.getButton(Text.COPY_COMMIT_MESSAGE, Modern.onCopyCommitMessage);
+      const container = titleDOM.parentElement.parentElement.parentElement;
+      const dropdown = new DropDown(prefixButton);
 
       copyBranchButton.insertBefore(Modern.getCopyIcon(), copyBranchButton.firstChild);
-
-      const copyCommitButton = Modern.getButton(
-        Text.COPY_COMMIT_MESSAGE,
-        Modern.onCopyCommitMessage
-      );
-
       copyCommitButton.insertBefore(Modern.getCopyIcon(), copyCommitButton.firstChild);
 
-      const container = titleDOM.parentElement.parentElement.parentElement;
-      Modern.buttonsContainer = document.createElement('div');
-      Modern.buttonsContainer.className = 'j2gt-buttons-container';
+      //TODO remove id
       prefixButton.id = 'j2gt-prefix-button';
 
+      // TODO do not store buttonsContainer into static field
+      Modern.buttonsContainer = document.createElement('div');
+      Modern.buttonsContainer.className = 'j2gt-buttons-container';
       Modern.buttonsContainer.appendChild(prefixButton);
       Modern.buttonsContainer.appendChild(copyBranchButton);
       Modern.buttonsContainer.appendChild(copyCommitButton);

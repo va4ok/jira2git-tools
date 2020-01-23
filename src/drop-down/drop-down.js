@@ -6,18 +6,27 @@ import { Prefix } from '../prefix/prefix.js';
 import { Modern } from '../modern/modern.js';
 
 export class DropDown {
+  // TODO rename with body ???
   $dropdown;
+  onValueSelectedListeners = [];
 
-  constructor() {
+  constructor(triggerDOM) {
     this.open = this.open.bind(this);
     this.close = this.close.bind(this);
     this.toggle = this.toggle.bind(this);
     this.onPrefixClick = this.onPrefixClick.bind(this);
+
+    triggerDOM.addEventListener('click', this.toggle);
+  }
+
+  registerOnValueSelected(callback) {
+    this.onValueSelectedListeners.push(callback);
   }
 
   onPrefixClick(e) {
     e.stopPropagation();
 
+    // TODO move logic into prefix ???
     const prefix = Prefix.LIST.find(p => p.key === e.target.dataset.key);
 
     if (prefix) {
@@ -47,6 +56,7 @@ export class DropDown {
       this.$dropdown.appendChild($list);
     }
 
+    // TODO remove container link
     Modern.buttonsContainer.appendChild(this.$dropdown);
   }
 

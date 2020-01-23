@@ -6,18 +6,19 @@ import { DropDown } from '../drop-down/drop-down.js';
 import { Prefix } from '../prefix/prefix.js';
 
 export class Legacy {
-  static dropdown = new DropDown();
-
-  static createButton(callback, text) {
+  static createButton(text, callback) {
     const li = document.createElement('li');
     const a = document.createElement('a');
     const span = document.createElement('span');
 
     li.className = 'toolbar-item';
     a.className = 'toolbar-trigger';
-    a.addEventListener('click', callback);
     span.className = 'trigger-label';
     span.innerText = text;
+
+    if (callback) {
+      a.addEventListener('click', callback);
+    }
 
     a.appendChild(span);
     li.appendChild(a);
@@ -105,17 +106,13 @@ export class Legacy {
 
     if (buttonsBar) {
       const ul = document.createElement('ul');
+      const dropdownTrigger = Legacy.createButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
+      const dropdown = new DropDown(dropdownTrigger);
 
       ul.className = 'toolbar-group';
-      ul.appendChild(
-        Legacy.createButton(Legacy.dropdown.toggle, `${Text.ARROW_DOWN} ${Prefix.get().value}`)
-      );
-      ul.appendChild(
-        Legacy.createButton(Legacy.copyBranchName, Text.COPY_BRANCH_NAME)
-      );
-      ul.appendChild(
-        Legacy.createButton(Legacy.onCopyCommitMessage, Text.COPY_COMMIT_MESSAGE)
-      );
+      ul.appendChild(dropdownTrigger);
+      ul.appendChild(Legacy.createButton(Text.COPY_BRANCH_NAME, Legacy.copyBranchName));
+      ul.appendChild(Legacy.createButton(Text.COPY_COMMIT_MESSAGE, Legacy.onCopyCommitMessage));
       buttonsBar.appendChild(ul);
     }
   }
