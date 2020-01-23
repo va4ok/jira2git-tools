@@ -2,7 +2,8 @@ import './drop-down.css';
 
 import { Text } from '../text/text.js';
 import { Prefix } from '../prefix/prefix.js';
-import { Modern } from "../modern/modern";
+// TODO remove modern link
+import { Modern } from '../modern/modern.js';
 
 export class DropDown {
   $dropdown;
@@ -53,7 +54,7 @@ export class DropDown {
     const $btn = document.getElementById('j2gt-prefix-button');
 
     this.$dropdown.remove();
-    $btn.innerText = `${Text.ARROW_DOWN} ${Prefix.selected.value}`;
+    $btn.innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
   }
 
   toggle(e) {
@@ -62,10 +63,10 @@ export class DropDown {
     // TODO remove target dependency
     if (e.target.innerText.indexOf(Text.ARROW_DOWN) !== -1) {
       this.open();
-      e.target.innerText = `${Text.ARROW_UP} ${Prefix.selected.value}`;
+      e.target.innerText = `${Text.ARROW_UP} ${Prefix.get().value}`;
     } else {
       this.close();
-      e.target.innerText = `${Text.ARROW_DOWN} ${Prefix.selected.value}`;
+      e.target.innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
     }
   }
 }

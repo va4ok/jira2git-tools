@@ -17,8 +17,6 @@ export class Notificator {
   }
 
   static notify(text, isError) {
-    Notificator.textShell = Notificator.$container.querySelector('div');
-
     if (isError) {
       Notificator.$container.classList.contains('error') ||
       Notificator.$container.classList.add('error');

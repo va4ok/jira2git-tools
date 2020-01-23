@@ -5,8 +5,8 @@ export class Prefix {
       key: 'feature',
       value: 'feature',
       description:
-        'Default branch type for any Jira ticket, may include backend and frontend changes. If in doubt - use this branch type. ' +
-        'CI includes: UI unit tests, UI build, shaper, backend compile, unit tests, integration tests, OWASP dependency check, sonar'
+      'Default branch type for any Jira ticket, may include backend and frontend changes. If in doubt - use this branch type. ' +
+      'CI includes: UI unit tests, UI build, shaper, backend compile, unit tests, integration tests, OWASP dependency check, sonar'
     },
     {
       key: 'ui',
@@ -30,20 +30,24 @@ export class Prefix {
     }
   ];
 
-  static selected;
+  static current;
 
   static save() {
-    localStorage.setItem(Prefix.KEY, JSON.stringify(Prefix.selected));
+    localStorage.setItem(Prefix.KEY, JSON.stringify(Prefix.current));
   }
 
   static restore() {
     const restoredPrefix = localStorage.getItem(Prefix.KEY);
 
-    Prefix.selected = restoredPrefix ? JSON.parse(restoredPrefix) : Prefix.LIST[0];
+    Prefix.current = restoredPrefix ? JSON.parse(restoredPrefix) : Prefix.LIST[0];
+  }
+
+  static get() {
+    return Prefix.current;
   }
 
   static set(current) {
-    Prefix.selected = current;
+    Prefix.current = current;
     Prefix.save();
   }
 }

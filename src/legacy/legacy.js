@@ -48,7 +48,7 @@ export class Legacy {
   static copyBranchName(e) {
     const issueID = Legacy.getIssueID();
     const issueName = Legacy.getIssueName();
-    const result = Format.branchName(issueID + ' ' + issueName, Prefix.selected.value);
+    const result = Format.branchName(issueID + ' ' + issueName, Prefix.get().value);
 
     e.stopPropagation();
     Copy.toClipboard(result);
@@ -108,7 +108,7 @@ export class Legacy {
 
       ul.className = 'toolbar-group';
       ul.appendChild(
-        Legacy.createButton(Legacy.dropdown.toggle, `${Text.ARROW_DOWN} ${Prefix.selected.value}`)
+        Legacy.createButton(Legacy.dropdown.toggle, `${Text.ARROW_DOWN} ${Prefix.get().value}`)
       );
       ul.appendChild(
         Legacy.createButton(Legacy.copyBranchName, Text.COPY_BRANCH_NAME)

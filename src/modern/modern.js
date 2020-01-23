@@ -99,7 +99,7 @@ export class Modern {
   static copyBranchName(e) {
     const { subTaskID, subTaskSummary } = Modern.getIssue();
 
-    let result = Format.branchName(`${subTaskID} ${subTaskSummary}`, Prefix.selected.value);
+    let result = Format.branchName(`${subTaskID} ${subTaskSummary}`, Prefix.get().value);
 
     e.stopPropagation();
     Copy.toClipboard(result);
@@ -154,7 +154,7 @@ export class Modern {
 
     if (titleDOM) {
       const prefixButton = Modern.getButton(
-        `${Text.ARROW_DOWN} ${Prefix.selected.value}`,
+        `${Text.ARROW_DOWN} ${Prefix.get().value}`,
         Modern.dropdown.toggle
       );
 
