@@ -8,6 +8,10 @@ export class DropDown {
   $dropdown;
 
   constructor() {
+    this.open = this.open.bind(this);
+    this.close = this.close.bind(this);
+    this.toggle = this.toggle.bind(this);
+    this.onPrefixClick = this.onPrefixClick.bind(this);
   }
 
   onPrefixClick(e) {

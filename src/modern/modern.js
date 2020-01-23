@@ -93,13 +93,13 @@ export class Modern {
       }
     }
 
-    return {subTaskID, subTaskSummary, subTaskType};
+    return { subTaskID, subTaskSummary, subTaskType };
   }
 
   static copyBranchName(e) {
-    const {subTaskID, subTaskSummary} = Modern.getIssue();
+    const { subTaskID, subTaskSummary } = Modern.getIssue();
 
-    let result = Format.branchName(`${subTaskID} ${subTaskSummary}`);
+    let result = Format.branchName(`${subTaskID} ${subTaskSummary}`, Prefix.selected.value);
 
     e.stopPropagation();
     Copy.toClipboard(result);
@@ -126,10 +126,10 @@ export class Modern {
   static onCopyCommitMessage(e) {
     e.stopPropagation();
 
-    let {subTaskID, subTaskSummary, subTaskType} = Modern.getIssue();
+    let { subTaskID, subTaskSummary, subTaskType } = Modern.getIssue();
 
     Modern.getIssueDetails(subTaskID).then(
-      ({data}) => {
+      ({ data }) => {
         let isBug = Utils.isBug(subTaskType.trim());
         let parentIssue = Modern.findFieldValue(data.issue.fields, 'parent');
 
