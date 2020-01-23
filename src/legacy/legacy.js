@@ -1,9 +1,9 @@
-import Text from '../text/text.js';
-import BranchName from '../branch-name/branch-name.js';
-import Notificator from '../notificator/notificator.js';
-import Utils from '../utils/utils';
+import { Text } from '../text/text.js';
+import { BranchName } from '../branch-name/branch-name.js';
+import { Notificator } from '../notificator/notificator.js';
+import { Utils } from '../utils/utils';
 
-export default class Legacy {
+export class Legacy {
   static createButton(callback, text) {
     const li = document.createElement('li');
     const a = document.createElement('a');

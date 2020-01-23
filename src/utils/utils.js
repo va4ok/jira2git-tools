@@ -1,4 +1,4 @@
-export default class Utils {
+export class Utils {
   static isBug(issueType) {
     return issueType.toUpperCase() === 'BUG';
   }

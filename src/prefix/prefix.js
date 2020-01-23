@@ -1,4 +1,4 @@
-export default class Prefix {
+export class Prefix {
   static KEY = 'JiraToGitPrefix';
   static LIST = [
     {

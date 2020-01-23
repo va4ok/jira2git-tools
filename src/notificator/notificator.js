@@ -1,6 +1,6 @@
 import './notificator.css';
 
-export default class Notificator {
+export class Notificator {
   static ANIMATION_TIME = 200;
   static POPUP_TIME = 5000;
 

@@ -1,4 +1,4 @@
-export default class BranchName {
+export class BranchName {
   static REGEXP = /[\s\[\]\\\-/:"“`'|.,<>#~*?^]+/g;
   static DIVIDER = '-';
   static MAX_LENGTH = 60;

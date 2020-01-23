@@ -1,6 +1,6 @@
-import Notificator from './notificator/notificator.js';
-import Prefix from './prefix/prefix.js';
-import Legacy from './legacy/legacy';
+import { Notificator} from './notificator/notificator.js';
+import { Prefix } from './prefix/prefix.js';
+import { Legacy } from './legacy/legacy';
 
 (function () {
   'use strict';
