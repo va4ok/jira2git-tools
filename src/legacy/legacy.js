@@ -2,8 +2,12 @@ import { Text } from '../text/text.js';
 import { Format } from '../format/format.js';
 import { Utils } from '../utils/utils.js';
 import { Copy } from '../helper/copy.js';
+import { DropDown } from '../drop-down/drop-down.js';
+import { Prefix } from '../prefix/prefix.js';
 
 export class Legacy {
+  static dropdown = new DropDown();
+
   static createButton(callback, text) {
     const li = document.createElement('li');
     const a = document.createElement('a');
@@ -44,7 +48,7 @@ export class Legacy {
   static copyBranchName(e) {
     const issueID = Legacy.getIssueID();
     const issueName = Legacy.getIssueName();
-    const result = Format.branchName(issueID + ' ' + issueName);
+    const result = Format.branchName(issueID + ' ' + issueName, Prefix.selected.value);
 
     e.stopPropagation();
     Copy.toClipboard(result);
@@ -61,7 +65,7 @@ export class Legacy {
       parentIssueSummary = parentIssueDOM.getAttribute('original-title');
     }
 
-    return {parentIssueID, parentIssueSummary};
+    return { parentIssueID, parentIssueSummary };
   }
 
   static isBug() {
@@ -75,7 +79,7 @@ export class Legacy {
   }
 
   static copyCommitMessage() {
-    let {parentIssueID, parentIssueSummary} = Legacy.getParentIssue();
+    let { parentIssueID, parentIssueSummary } = Legacy.getParentIssue();
     let subTaskID = Legacy.getIssueID();
     let subTaskSummary = Legacy.getIssueName();
     let isBug = Legacy.isBug();
@@ -103,6 +107,9 @@ export class Legacy {
       const ul = document.createElement('ul');
 
       ul.className = 'toolbar-group';
+      ul.appendChild(
+        Legacy.createButton(Legacy.dropdown.toggle, `${Text.ARROW_DOWN} ${Prefix.selected.value}`)
+      );
       ul.appendChild(
         Legacy.createButton(Legacy.copyBranchName, Text.COPY_BRANCH_NAME)
       );
