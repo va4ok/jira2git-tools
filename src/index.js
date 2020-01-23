@@ -1,6 +1,7 @@
-import { Notificator} from './notificator/notificator.js';
+import { Notificator } from './notificator/notificator.js';
 import { Prefix } from './prefix/prefix.js';
-import { Legacy } from './legacy/legacy';
+import { Modern } from './modern/modern.js';
+import { Legacy } from './legacy/legacy.js';
 
 (function () {
   'use strict';
@@ -8,5 +9,9 @@ import { Legacy } from './legacy/legacy';
   Notificator.init();
   Prefix.restore();
 
-  !!window.SPA_STATE ? initSPAButtons() : Legacy.init();
+  if (window.hasOwnProperty('SPA_STATE')) {
+    Modern.init();
+  } else {
+    Legacy.init();
+  }
 })();

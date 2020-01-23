@@ -1,0 +1,25 @@
+.j2gt-dropdown {
+    position: absolute;
+    z-index: 1000;
+    top: 90px;
+    left: 8px;
+}
+
+.j2gt-dropdown ul {
+    padding: 4px 0;
+    background: white;
+    box-shadow: rgba(9, 30, 66, 0.13) 0 0 0 1px, rgba(9, 30, 66, 0.13) 0 4px 11px;
+    border-radius: 4px;
+    max-width: 220px;
+    list-style: none;
+}
+
+.j2gt-dropdown ul li {
+    padding: 8px 24px;
+    color: rgb(23, 43, 77);
+    cursor: pointer;
+}
+
+.j2gt-dropdown ul li:hover {
+    background: rgb(222, 235, 255);
+}

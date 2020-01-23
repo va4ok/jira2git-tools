@@ -1,7 +1,7 @@
 import { Text } from '../text/text.js';
-import { BranchName } from '../branch-name/branch-name.js';
-import { Notificator } from '../notificator/notificator.js';
-import { Utils } from '../utils/utils';
+import { Format } from '../format/format.js';
+import { Utils } from '../utils/utils.js';
+import { Copy } from '../helper/copy.js';
 
 export class Legacy {
   static createButton(callback, text) {
@@ -44,18 +44,10 @@ export class Legacy {
   static copyBranchName(e) {
     const issueID = Legacy.getIssueID();
     const issueName = Legacy.getIssueName();
-    const result = BranchName.format(issueID + ' ' + issueName);
+    const result = Format.branchName(issueID + ' ' + issueName);
 
     e.stopPropagation();
-
-    navigator.clipboard.writeText(result).then(
-      () => {
-        Notificator.success('Copied:\n' + result);
-      },
-      () => {
-        Notificator.error('Not copied:\n' + result);
-      }
-    );
+    Copy.toClipboard(result);
   }
 
   static getParentIssue() {
@@ -88,8 +80,8 @@ export class Legacy {
     let subTaskSummary = Legacy.getIssueName();
     let isBug = Legacy.isBug();
 
-    copyToClipboard(
-      getCommitMessage({
+    Copy.toClipboard(
+      Format.commitMessage({
         parentIssueID,
         parentIssueSummary,
         subTaskID,
