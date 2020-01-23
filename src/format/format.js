@@ -8,7 +8,7 @@ export class Format {
   static branchName(branchName, branchPrefix = '') {
     const result = branchName
       .trim()
-      .replace(Format.REGEXP, Utils.DIVIDER)
+      .replace(Format.REGEXP, Format.DIVIDER)
       .slice(0, Format.MAX_LENGTH - (branchPrefix.length + 1)); // +1 for slash
 
     return `${branchPrefix}/${result}`;
