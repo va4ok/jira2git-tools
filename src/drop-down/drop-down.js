@@ -1,82 +1,48 @@
 import './drop-down.css';
 
-import { Text } from '../text/text.js';
-import { Prefix } from '../prefix/prefix.js';
-// TODO remove modern link
-import { Modern } from '../modern/modern.js';
-
 export class DropDown {
-  // TODO rename with body ???
-  $dropdown;
-  onValueSelectedListeners = [];
+  initBody() {
+    this.body = document.createElement('div');
+    this.body.style.display = 'none';
+    this.body.style.position = 'absolute';
+    this.body.style.zIndex = '100';
+    this.body.className = 'j2gt-dropdown';
+    document.body.appendChild(this.body);
+  }
 
-  constructor(triggerDOM) {
+  constructor(triggerDOM, body) {
+    this.initBody();
+    this.body.appendChild(body);
+
     this.open = this.open.bind(this);
     this.close = this.close.bind(this);
     this.toggle = this.toggle.bind(this);
-    this.onPrefixClick = this.onPrefixClick.bind(this);
 
+    this.trigger = triggerDOM;
     triggerDOM.addEventListener('click', this.toggle);
   }
 
-  registerOnValueSelected(callback) {
-    this.onValueSelectedListeners.push(callback);
-  }
-
-  onPrefixClick(e) {
-    e.stopPropagation();
-
-    // TODO move logic into prefix ???
-    const prefix = Prefix.LIST.find(p => p.key === e.target.dataset.key);
-
-    if (prefix) {
-      Prefix.set(prefix);
-    }
-
-    this.close();
-  }
-
   open() {
-    if (!this.$dropdown) {
-      const $list = document.createElement('ul');
+    const rect = this.trigger.getBoundingClientRect();
+    this.body.style.left = rect.left + 'px';
+    this.body.style.top = rect.top + rect.height + 6 + 'px';
+    this.body.style.display = '';
 
-      this.$dropdown = document.createElement('div');
-      this.$dropdown.className = 'j2gt-dropdown';
-
-      Prefix.LIST.forEach(prefix => {
-        const $button = document.createElement('li');
-
-        $button.innerText = prefix.value;
-        $button.title = prefix.description;
-        $button.addEventListener('click', this.onPrefixClick);
-        $button.dataset.key = prefix.key;
-        $list.appendChild($button);
-      });
-
-      this.$dropdown.appendChild($list);
-    }
-
-    // TODO remove container link
-    Modern.buttonsContainer.appendChild(this.$dropdown);
+    document.body.addEventListener('click', this.close, { once: true })
   }
 
-  close() {
-    const $btn = document.getElementById('j2gt-prefix-button');
-
-    this.$dropdown.remove();
-    $btn.innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
+  close(e = { stopPropagation: () => {} }) {
+    e.stopPropagation();
+    this.body.style.display = 'none';
   }
 
   toggle(e) {
     e.stopPropagation();
 
-    // TODO remove target dependency
-    if (e.target.innerText.indexOf(Text.ARROW_DOWN) !== -1) {
+    if (this.body.style.display === 'none') {
       this.open();
-      e.target.innerText = `${Text.ARROW_UP} ${Prefix.get().value}`;
     } else {
       this.close();
-      e.target.innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
     }
   }
 }

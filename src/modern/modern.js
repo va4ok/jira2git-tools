@@ -160,7 +160,11 @@ export class Modern {
       const copyBranchButton = Modern.getButton(Text.COPY_BRANCH_NAME, Modern.copyBranchName);
       const copyCommitButton = Modern.getButton(Text.COPY_COMMIT_MESSAGE, Modern.onCopyCommitMessage);
       const container = titleDOM.parentElement.parentElement.parentElement;
-      const dropdown = new DropDown(prefixButton);
+
+      new DropDown(prefixButton, Prefix.selectableList.ul);
+      Prefix.onPrefixSelected = () => {
+        prefixButton.innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
+      };
 
       copyBranchButton.insertBefore(Modern.getCopyIcon(), copyBranchButton.firstChild);
       copyCommitButton.insertBefore(Modern.getCopyIcon(), copyCommitButton.firstChild);

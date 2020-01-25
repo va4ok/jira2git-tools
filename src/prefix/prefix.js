@@ -1,3 +1,5 @@
+import { SelectableList } from '../selectable-list/selectable-list.js';
+
 export class Prefix {
   static KEY = 'JiraToGitPrefix';
   static LIST = [
@@ -30,7 +32,17 @@ export class Prefix {
     }
   ];
 
+  static selectableList = new SelectableList(Prefix.LIST, Prefix.onPrefixClick);
+
   static current;
+
+  static onPrefixSelected = () => {
+  };
+
+  static onPrefixClick(prefix) {
+    Prefix.set(prefix);
+    Prefix.onPrefixSelected();
+  }
 
   static save() {
     localStorage.setItem(Prefix.KEY, JSON.stringify(Prefix.current));
