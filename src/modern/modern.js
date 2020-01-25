@@ -10,9 +10,6 @@ import { Utils } from '../utils/utils.js';
 import { http } from '../utils/http.js';
 
 export class Modern {
-  // TODO remove static field
-  static buttonsContainer;
-
   static getCopyIcon() {
     const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     icon.setAttribute('width', '24');
@@ -156,6 +153,7 @@ export class Modern {
     const titleDOM = document.querySelector('h1');
 
     if (titleDOM) {
+      const buttonsContainer = document.createElement('div');
       const prefixButton = Modern.getButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
       const copyBranchButton = Modern.getButton(Text.COPY_BRANCH_NAME, Modern.copyBranchName);
       const copyCommitButton = Modern.getButton(Text.COPY_COMMIT_MESSAGE, Modern.onCopyCommitMessage);
@@ -168,18 +166,12 @@ export class Modern {
 
       copyBranchButton.insertBefore(Modern.getCopyIcon(), copyBranchButton.firstChild);
       copyCommitButton.insertBefore(Modern.getCopyIcon(), copyCommitButton.firstChild);
+      buttonsContainer.className = 'j2gt-buttons-container';
+      buttonsContainer.appendChild(prefixButton);
+      buttonsContainer.appendChild(copyBranchButton);
+      buttonsContainer.appendChild(copyCommitButton);
 
-      //TODO remove id
-      prefixButton.id = 'j2gt-prefix-button';
-
-      // TODO do not store buttonsContainer into static field
-      Modern.buttonsContainer = document.createElement('div');
-      Modern.buttonsContainer.className = 'j2gt-buttons-container';
-      Modern.buttonsContainer.appendChild(prefixButton);
-      Modern.buttonsContainer.appendChild(copyBranchButton);
-      Modern.buttonsContainer.appendChild(copyCommitButton);
-
-      container.appendChild(Modern.buttonsContainer);
+      container.appendChild(buttonsContainer);
     }
   }
 }
