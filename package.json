@@ -1,6 +1,6 @@
 {
   "name": "jira2git-tools",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "Tools to work with cloud jira. Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.",
   "main": "Jira_Task2Branch.user.js",
   "scripts": {
