@@ -4,7 +4,9 @@ Tools for jira cloud to make easier to work with git messages and branches.
 
 ## Getting Started
 
-New buttons (Copy Branch Name and Copy Commit Message) will appears on issue detail page. 
+New buttons (Prefix dropdown, Copy Branch Name and Copy Commit Message) will appears on issue detail page.
+
+If You need some prefix choose one in dropdown or set none if no need prefix. 
 
 Click on Copy Branch Name button to copy branch name and paste one into new created brach as name.
 
@@ -33,6 +35,31 @@ Open tampermonkey plugin page in your Chrome or FireFox browser.
 Create new user script and paste copied script.
 
 Save script and done.
+
+## Samples
+Branch name
+```
+EXAMPLE-15599-Display-a-specific-Page
+ui/EXAMPLE-15599-Display-a-specific-Page
+jenkins/EXAMPLE-15599-Display-a-specific-Page
+```
+Commit message
+```
+EXAMPLE-15530: Story description
+
+- [DEV]
+
+
+EXAMPLE-15530: Story description PESV3-15599: Subtask description
+
+- [DEV]
+``` 
+Commit message for a bug
+```
+EXAMPLE-15530: Some bug description
+
+- [FIX] 
+```
 
 ## Authors
 

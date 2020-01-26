@@ -6,12 +6,17 @@ export class Format {
   static MAX_LENGTH = 60;
 
   static branchName(branchName, branchPrefix = '') {
+    if (branchPrefix === 'none') {
+      branchPrefix = '';
+    }
+
+    const prefixLength = branchPrefix ? branchPrefix.length + 1 : 0;
     const result = branchName
       .trim()
       .replace(Format.REGEXP, Format.DIVIDER)
-      .slice(0, Format.MAX_LENGTH - (branchPrefix.length + 1)); // +1 for slash
+      .slice(0, Format.MAX_LENGTH - prefixLength);
 
-    return `${branchPrefix}/${result}`;
+    return `${branchPrefix}${branchPrefix ? '/' : ''}${result}`;
   }
 
   static commitMessage({

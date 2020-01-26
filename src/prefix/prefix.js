@@ -4,6 +4,11 @@ export class Prefix {
   static KEY = 'JiraToGitPrefix';
   static LIST = [
     {
+      key: 'none',
+      value: 'none',
+      description: 'No prefix'
+    },
+    {
       key: 'feature',
       value: 'feature',
       description:
