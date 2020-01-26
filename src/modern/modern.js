@@ -106,6 +106,12 @@ export class Modern {
   }
 
   static getIssueDetails(issueID) {
+    if (Modern.issueDetails) {
+      return new Promise((resolve) => {
+        resolve(Modern.issueDetails);
+      });
+    }
+
     const url = '/rest/graphql/1/';
 
     let query = {
@@ -120,7 +126,10 @@ export class Modern {
   `
     };
 
-    return http.post(url, query);
+    return http.post(url, query).then(obj => {
+      Modern.issueDetails = obj;
+      return obj;
+    });
   }
 
   static onCopyCommitMessage(e) {
@@ -157,12 +166,15 @@ export class Modern {
       const prefixButton = Modern.getButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
       const copyBranchButton = Modern.getButton(Text.COPY_BRANCH_NAME, Modern.copyBranchName);
       const copyCommitButton = Modern.getButton(Text.COPY_COMMIT_MESSAGE, Modern.onCopyCommitMessage);
+      const infoButton = Modern.getButton(`${Text.ARROW_DOWN} Info`);
       const container = titleDOM.parentElement.parentElement.parentElement;
 
       new DropDown(prefixButton, Prefix.selectableList.ul);
       Prefix.onPrefixSelected = () => {
         prefixButton.innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
       };
+
+      new DropDown(prefixButton, Prefix.selectableList.ul);
 
       copyBranchButton.insertBefore(Modern.getCopyIcon(), copyBranchButton.firstChild);
       copyCommitButton.insertBefore(Modern.getCopyIcon(), copyCommitButton.firstChild);
