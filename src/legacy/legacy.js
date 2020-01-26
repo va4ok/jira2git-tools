@@ -106,11 +106,14 @@ export class Legacy {
 
     if (buttonsBar) {
       const ul = document.createElement('ul');
-      const dropdownTrigger = Legacy.createButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
-      const dropdown = new DropDown(dropdownTrigger);
+      const prefixButton = Legacy.createButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
+      new DropDown(prefixButton, Prefix.selectableList.ul);
+      Prefix.onPrefixSelected = () => {
+        prefixButton.querySelector('.trigger-label').innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
+      };
 
       ul.className = 'toolbar-group';
-      ul.appendChild(dropdownTrigger);
+      ul.appendChild(prefixButton);
       ul.appendChild(Legacy.createButton(Text.COPY_BRANCH_NAME, Legacy.copyBranchName));
       ul.appendChild(Legacy.createButton(Text.COPY_COMMIT_MESSAGE, Legacy.onCopyCommitMessage));
       buttonsBar.appendChild(ul);
