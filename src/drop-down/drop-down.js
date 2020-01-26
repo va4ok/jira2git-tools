@@ -22,17 +22,22 @@ export class DropDown {
     triggerDOM.addEventListener('click', this.toggle);
   }
 
-  open() {
+  setBodyPosition() {
     const rect = this.trigger.getBoundingClientRect();
+
     this.body.style.left = rect.left + 'px';
     this.body.style.top = rect.top + rect.height + 6 + 'px';
+  }
+
+  open() {
+    this.setBodyPosition();
     this.body.style.display = '';
 
     document.body.addEventListener('click', this.close, { once: true })
   }
 
-  close(e = { stopPropagation: () => {} }) {
-    e.stopPropagation();
+  close(e) {
+    e.stopPropagation && e.stopPropagation();
     this.body.style.display = 'none';
   }
 
