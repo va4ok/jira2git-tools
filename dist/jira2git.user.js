@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      3.0.0
+// @version      3.1.0
 // @description  Tools to work with cloud jira. Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
 // @match        *://*.atlassian.net/browse/*
@@ -99,6 +99,11 @@ class SelectableList {
 class Prefix {
   static KEY = 'JiraToGitPrefix';
   static LIST = [
+    {
+      key: 'none',
+      value: 'none',
+      description: 'No prefix'
+    },
     {
       key: 'feature',
       value: 'feature',
@@ -235,12 +240,17 @@ class Format {
   static MAX_LENGTH = 60;
 
   static branchName(branchName, branchPrefix = '') {
+    if (branchPrefix === 'none') {
+      branchPrefix = '';
+    }
+
+    const prefixLength = branchPrefix ? branchPrefix.length + 1 : 0;
     const result = branchName
       .trim()
       .replace(Format.REGEXP, Format.DIVIDER)
-      .slice(0, Format.MAX_LENGTH - (branchPrefix.length + 1)); // +1 for slash
+      .slice(0, Format.MAX_LENGTH - prefixLength);
 
-    return `${branchPrefix}/${result}`;
+    return `${branchPrefix}${branchPrefix ? '/' : ''}${result}`;
   }
 
   static commitMessage({
