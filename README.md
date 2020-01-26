@@ -26,7 +26,7 @@ Done.
 OR
 
 
-Copy user script from git page.
+Copy user script from [git page](https://github.com/va4ok/jira2git-tools/blob/master/dist/jira2git.user.js).
 
 Open tampermonkey plugin page in your Chrome or FireFox browser.
 
