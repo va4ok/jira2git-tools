@@ -21,14 +21,9 @@ export class Prefix {
       description: 'For UI only changes. CI includes: UI unit tests, UI build'
     },
     {
-      key: 'jenkins',
-      value: 'jenkins',
+      key: 'devops',
+      value: 'devops',
       description: 'For changes in Jenkins pipelines. CI includes: TBD'
-    },
-    {
-      key: 'gmp',
-      value: 'gmp',
-      description: 'For UI only changes. CI includes: UI unit tests, UI build'
     },
     {
       key: 'autotest',

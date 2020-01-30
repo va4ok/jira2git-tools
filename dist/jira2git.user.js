@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      3.1.0
+// @version      3.2.0
 // @description  Tools to work with cloud jira. Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
 // @match        *://*.atlassian.net/browse/*
@@ -117,14 +117,9 @@ class Prefix {
       description: 'For UI only changes. CI includes: UI unit tests, UI build'
     },
     {
-      key: 'jenkins',
-      value: 'jenkins',
+      key: 'devops',
+      value: 'devops',
       description: 'For changes in Jenkins pipelines. CI includes: TBD'
-    },
-    {
-      key: 'gmp',
-      value: 'gmp',
-      description: 'For UI only changes. CI includes: UI unit tests, UI build'
     },
     {
       key: 'autotest',
