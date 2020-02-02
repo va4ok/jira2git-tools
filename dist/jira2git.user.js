@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Task2Branch
 // @namespace    http://tampermonkey.net/
-// @version      3.2.0
+// @version      4.0.0
 // @description  Tools to work with cloud jira. Works only on issue (modern or legacy) details page e.g. https://org.atlassian.net/browse/Jira-Ticket-NNNN. Copy commit message.
 // @author       va4ok
 // @match        *://*.atlassian.net/browse/*
@@ -75,7 +75,8 @@ class Notificator {
 }
 
 class SelectableList {
-  constructor(list, onValueClick) {
+  constructor(list, onValueClick = () => {
+  }) {
     this.ul = document.createElement('ul');
     this.onValueClick = onValueClick;
     this.onclick = this.onclick.bind(this);
@@ -83,7 +84,7 @@ class SelectableList {
     list.forEach(listValue => {
       const li = document.createElement('li');
 
-      li.innerText = listValue.value;
+      li.innerHTML = listValue.value;
       li.title = listValue.description;
       li.addEventListener('click', this.onclick);
       li.dataset.data = JSON.stringify(listValue);
@@ -92,7 +93,9 @@ class SelectableList {
   }
 
   onclick(e) {
-    this.onValueClick(JSON.parse(e.target.dataset.data));
+    if (typeof  this.onValueClick === 'function') {
+      this.onValueClick(JSON.parse(e.target.dataset.data));
+    }
   }
 }
 
@@ -204,7 +207,7 @@ class DropDown {
   }
 
   close(e) {
-    e.stopPropagation && e.stopPropagation();
+    e && e.stopPropagation && e.stopPropagation();
     this.body.style.display = 'none';
   }
 
@@ -297,6 +300,21 @@ class http {
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify(data));
     });
+  }
+}
+
+class AdditionalInfo {
+  static get({ fixVersionsDescription }) {
+    const list = [];
+
+    if (fixVersionsDescription) {
+      list.push({
+        'description': 'Fix version description',
+        'value': `<strong>Fix Version:</strong> ${fixVersionsDescription}`
+      })
+    }
+
+    return new SelectableList(list).ul;
   }
 }
 
@@ -397,6 +415,12 @@ class Modern {
   }
 
   static getIssueDetails(issueID) {
+    if (Modern.issueDetails) {
+      return new Promise((resolve) => {
+        resolve(Modern.issueDetails);
+      });
+    }
+
     const url = '/rest/graphql/1/';
 
     let query = {
@@ -411,7 +435,10 @@ class Modern {
   `
     };
 
-    return http.post(url, query);
+    return http.post(url, query).then(obj => {
+      Modern.issueDetails = obj;
+      return obj;
+    });
   }
 
   static onCopyCommitMessage(e) {
@@ -440,6 +467,17 @@ class Modern {
     );
   }
 
+  static getInfoList() {
+    let { subTaskID } = Modern.getIssue();
+
+    return Modern.getIssueDetails(subTaskID).then(({ data }) => {
+      const fixVersions = Modern.findFieldValue(data.issue.fields, 'fixVersions');
+      const fixVersionsDescription = (fixVersions && fixVersions[0] && fixVersions[0]['description']) || '';
+
+      return AdditionalInfo.get({ fixVersionsDescription });
+    });
+  }
+
   static init() {
     const titleDOM = document.querySelector('h1');
 
@@ -461,6 +499,12 @@ class Modern {
       buttonsContainer.appendChild(prefixButton);
       buttonsContainer.appendChild(copyBranchButton);
       buttonsContainer.appendChild(copyCommitButton);
+
+      Modern.getInfoList().then((list) => {
+        const infoButton = Modern.getButton(`${Text.ARROW_DOWN} Info`);
+        new DropDown(infoButton, list);
+        buttonsContainer.appendChild(infoButton);
+      });
 
       container.appendChild(buttonsContainer);
     }
@@ -563,22 +607,49 @@ class Legacy {
     Legacy.copyCommitMessage();
   }
 
+  static getMergeBranch() {
+    const link = document.querySelector('#fixVersions-field a');
+
+    if (link) {
+      return link.title;
+    }
+
+    return 'not specified';
+  }
+
   static init() {
-    const buttonsBar = document.querySelector('.toolbar-split-left');
+    const buttonsBar = document.querySelector('.issue-header-content');
 
     if (buttonsBar) {
       const ul = document.createElement('ul');
       const prefixButton = Legacy.createButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
+
       new DropDown(prefixButton, Prefix.selectableList.ul);
       Prefix.onPrefixSelected = () => {
         prefixButton.querySelector('.trigger-label').innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
       };
 
+      const infoButton = Legacy.createButton(`${Text.ARROW_DOWN} Info`);
+      new DropDown(infoButton, AdditionalInfo.get({ fixVersionsDescription: Legacy.getMergeBranch() }));
+
       ul.className = 'toolbar-group';
       ul.appendChild(prefixButton);
       ul.appendChild(Legacy.createButton(Text.COPY_BRANCH_NAME, Legacy.copyBranchName));
       ul.appendChild(Legacy.createButton(Text.COPY_COMMIT_MESSAGE, Legacy.onCopyCommitMessage));
-      buttonsBar.appendChild(ul);
+      ul.appendChild(infoButton);
+
+      const div = document.createElement('div');
+      div.className = 'command-bar';
+      div.innerHTML = `
+      <div class="ops-cont">
+        <div class="ops-menus aui-toolbar">
+            <div class="toolbar-split toolbar-split-left"></div>
+        </div>
+      </div>
+      `;
+
+      div.querySelector('.toolbar-split.toolbar-split-left').appendChild(ul);
+      buttonsBar.appendChild(div);
     }
   }
 }
@@ -668,7 +739,7 @@ class Legacy {
     background: white;
     box-shadow: rgba(9, 30, 66, 0.13) 0 0 0 1px, rgba(9, 30, 66, 0.13) 0 4px 11px;
     border-radius: 4px;
-    max-width: 220px;
+    max-width: 300px;
     list-style: none;
 }
 

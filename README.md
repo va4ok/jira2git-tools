@@ -12,6 +12,8 @@ Click on Copy Branch Name button to copy branch name and paste one into new crea
 
 Click on Copy Commit Message button to copy commit message template and paste one into description field on commit.
 
+Info drop down contains additional useful info (fix version description) *new v.4.0.0*
+
 ### Prerequisites
 
 To work with jira2git-tools [tampermonkey](https://www.tampermonkey.net/) browser plugin have to be installed
