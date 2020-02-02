@@ -8,6 +8,7 @@ import { Prefix } from '../prefix/prefix.js';
 import { Notificator } from '../notificator/notificator.js';
 import { Utils } from '../utils/utils.js';
 import { http } from '../utils/http.js';
+import { AdditionalInfo } from "../additional-info/additional-info";
 
 export class Modern {
   static getCopyIcon() {
@@ -106,6 +107,12 @@ export class Modern {
   }
 
   static getIssueDetails(issueID) {
+    if (Modern.issueDetails) {
+      return new Promise((resolve) => {
+        resolve(Modern.issueDetails);
+      });
+    }
+
     const url = '/rest/graphql/1/';
 
     let query = {
@@ -120,7 +127,10 @@ export class Modern {
   `
     };
 
-    return http.post(url, query);
+    return http.post(url, query).then(obj => {
+      Modern.issueDetails = obj;
+      return obj;
+    });
   }
 
   static onCopyCommitMessage(e) {
@@ -149,6 +159,17 @@ export class Modern {
     );
   }
 
+  static getInfoList() {
+    let { subTaskID } = Modern.getIssue();
+
+    return Modern.getIssueDetails(subTaskID).then(({ data }) => {
+      const fixVersions = Modern.findFieldValue(data.issue.fields, 'fixVersions');
+      const fixVersionsDescription = (fixVersions && fixVersions[0] && fixVersions[0]['description']) || '';
+
+      return AdditionalInfo.get({ fixVersionsDescription });
+    });
+  }
+
   static init() {
     const titleDOM = document.querySelector('h1');
 
@@ -171,8 +192,13 @@ export class Modern {
       buttonsContainer.appendChild(copyBranchButton);
       buttonsContainer.appendChild(copyCommitButton);
 
+      Modern.getInfoList().then((list) => {
+        const infoButton = Modern.getButton(`${Text.ARROW_DOWN} Info`);
+        new DropDown(infoButton, list);
+        buttonsContainer.appendChild(infoButton);
+      });
+
       container.appendChild(buttonsContainer);
     }
   }
 }
-

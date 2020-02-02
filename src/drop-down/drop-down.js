@@ -37,7 +37,7 @@ export class DropDown {
   }
 
   close(e) {
-    e.stopPropagation && e.stopPropagation();
+    e && e.stopPropagation && e.stopPropagation();
     this.body.style.display = 'none';
   }
 

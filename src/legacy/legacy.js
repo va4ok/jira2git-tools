@@ -4,6 +4,7 @@ import { Utils } from '../utils/utils.js';
 import { Copy } from '../helper/copy.js';
 import { DropDown } from '../drop-down/drop-down.js';
 import { Prefix } from '../prefix/prefix.js';
+import { AdditionalInfo } from "../additional-info/additional-info";
 
 export class Legacy {
   static createButton(text, callback) {
@@ -101,22 +102,49 @@ export class Legacy {
     Legacy.copyCommitMessage();
   }
 
+  static getMergeBranch() {
+    const link = document.querySelector('#fixVersions-field a');
+
+    if (link) {
+      return link.title;
+    }
+
+    return 'not specified';
+  }
+
   static init() {
-    const buttonsBar = document.querySelector('.toolbar-split-left');
+    const buttonsBar = document.querySelector('.issue-header-content');
 
     if (buttonsBar) {
       const ul = document.createElement('ul');
       const prefixButton = Legacy.createButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
+
       new DropDown(prefixButton, Prefix.selectableList.ul);
       Prefix.onPrefixSelected = () => {
         prefixButton.querySelector('.trigger-label').innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
       };
 
+      const infoButton = Legacy.createButton(`${Text.ARROW_DOWN} Info`);
+      new DropDown(infoButton, AdditionalInfo.get({ fixVersionsDescription: Legacy.getMergeBranch() }));
+
       ul.className = 'toolbar-group';
       ul.appendChild(prefixButton);
       ul.appendChild(Legacy.createButton(Text.COPY_BRANCH_NAME, Legacy.copyBranchName));
       ul.appendChild(Legacy.createButton(Text.COPY_COMMIT_MESSAGE, Legacy.onCopyCommitMessage));
-      buttonsBar.appendChild(ul);
+      ul.appendChild(infoButton);
+
+      const div = document.createElement('div');
+      div.className = 'command-bar';
+      div.innerHTML = `
+      <div class="ops-cont">
+        <div class="ops-menus aui-toolbar">
+            <div class="toolbar-split toolbar-split-left"></div>
+        </div>
+      </div>
+      `;
+
+      div.querySelector('.toolbar-split.toolbar-split-left').appendChild(ul);
+      buttonsBar.appendChild(div);
     }
   }
 }
