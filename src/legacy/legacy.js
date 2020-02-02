@@ -4,6 +4,7 @@ import { Utils } from '../utils/utils.js';
 import { Copy } from '../helper/copy.js';
 import { DropDown } from '../drop-down/drop-down.js';
 import { Prefix } from '../prefix/prefix.js';
+import { AdditionalInfo } from "../additional-info/additional-info";
 
 export class Legacy {
   static createButton(text, callback) {
@@ -111,15 +112,6 @@ export class Legacy {
     return 'not specified';
   }
 
-  static getInfoList() {
-    const list = [{
-      'description': 'Branch for the issue',
-      'value': `Branch: ${Legacy.getMergeBranch()}`
-    }];
-
-    return new SelectableList(list, () => {}).ul;
-  }
-
   static init() {
     const buttonsBar = document.querySelector('.issue-header-content');
 
@@ -133,7 +125,7 @@ export class Legacy {
       };
 
       const infoButton = Legacy.createButton(`${Text.ARROW_DOWN} Info`);
-      new DropDown(infoButton, Legacy.getInfoList());
+      new DropDown(infoButton, AdditionalInfo.get({ fixVersionsDescription: Legacy.getMergeBranch() }));
 
       ul.className = 'toolbar-group';
       ul.appendChild(prefixButton);

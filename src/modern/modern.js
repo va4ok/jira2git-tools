@@ -8,6 +8,7 @@ import { Prefix } from '../prefix/prefix.js';
 import { Notificator } from '../notificator/notificator.js';
 import { Utils } from '../utils/utils.js';
 import { http } from '../utils/http.js';
+import { AdditionalInfo } from "../additional-info/additional-info";
 
 export class Modern {
   static getCopyIcon() {
@@ -158,6 +159,17 @@ export class Modern {
     );
   }
 
+  static getInfoList() {
+    let { subTaskID } = Modern.getIssue();
+
+    return Modern.getIssueDetails(subTaskID).then(({ data }) => {
+      const fixVersions = Modern.findFieldValue(data.issue.fields, 'fixVersions');
+      const fixVersionsDescription = (fixVersions && fixVersions[0] && fixVersions[0]['description']) || '';
+
+      return AdditionalInfo.get({ fixVersionsDescription });
+    });
+  }
+
   static init() {
     const titleDOM = document.querySelector('h1');
 
@@ -166,15 +178,12 @@ export class Modern {
       const prefixButton = Modern.getButton(`${Text.ARROW_DOWN} ${Prefix.get().value}`);
       const copyBranchButton = Modern.getButton(Text.COPY_BRANCH_NAME, Modern.copyBranchName);
       const copyCommitButton = Modern.getButton(Text.COPY_COMMIT_MESSAGE, Modern.onCopyCommitMessage);
-      const infoButton = Modern.getButton(`${Text.ARROW_DOWN} Info`);
       const container = titleDOM.parentElement.parentElement.parentElement;
 
       new DropDown(prefixButton, Prefix.selectableList.ul);
       Prefix.onPrefixSelected = () => {
         prefixButton.innerText = `${Text.ARROW_DOWN} ${Prefix.get().value}`;
       };
-
-      new DropDown(prefixButton, Prefix.selectableList.ul);
 
       copyBranchButton.insertBefore(Modern.getCopyIcon(), copyBranchButton.firstChild);
       copyCommitButton.insertBefore(Modern.getCopyIcon(), copyCommitButton.firstChild);
@@ -183,8 +192,13 @@ export class Modern {
       buttonsContainer.appendChild(copyBranchButton);
       buttonsContainer.appendChild(copyCommitButton);
 
+      Modern.getInfoList().then((list) => {
+        const infoButton = Modern.getButton(`${Text.ARROW_DOWN} Info`);
+        new DropDown(infoButton, list);
+        buttonsContainer.appendChild(infoButton);
+      });
+
       container.appendChild(buttonsContainer);
     }
   }
 }
-
