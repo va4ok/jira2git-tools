@@ -38,4 +38,27 @@ export class Format {
 
     return `${subTaskID}: ${subTaskSummary}\n\n- [${type}] `;
   }
+
+  static commitMessageConventional({
+                                     parentIssueID,
+                                     parentIssueSummary,
+                                     subTaskID,
+                                     subTaskSummary,
+                                     prefix,
+                                     isBreakingChanges
+                                   }) {
+    const BREAKING_CHANGE = '\n\nBREAKING CHANGE'
+
+    let partial = `${prefix}: ${subTaskSummary}\n\n${isBreakingChanges ? BREAKING_CHANGE : ''}`;
+
+    if (parentIssueID && Utils.isSimilarText(subTaskSummary, parentIssueSummary)) {
+      return `${partial}${parentIssueID} ${subTaskID}: ${subTaskSummary}`;
+    }
+
+    if (parentIssueID) {
+      return `${partial}${parentIssueID}: ${parentIssueSummary} ${subTaskID}: ${subTaskSummary}`;
+    }
+
+    return `${partial}${subTaskID}: ${subTaskSummary}`;
+  }
 }

@@ -94,11 +94,11 @@ export class Modern {
       }
     }
 
-    return { subTaskID, subTaskSummary, subTaskType };
+    return {subTaskID, subTaskSummary, subTaskType};
   }
 
   static copyBranchName(e) {
-    const { subTaskID, subTaskSummary } = Modern.getIssue();
+    const {subTaskID, subTaskSummary} = Modern.getIssue();
 
     let result = Format.branchName(`${subTaskID} ${subTaskSummary}`, Prefix.get().value);
 
@@ -136,10 +136,10 @@ export class Modern {
   static onCopyCommitMessage(e) {
     e.stopPropagation();
 
-    let { subTaskID, subTaskSummary, subTaskType } = Modern.getIssue();
+    let {subTaskID, subTaskSummary, subTaskType} = Modern.getIssue();
 
     Modern.getIssueDetails(subTaskID).then(
-      ({ data }) => {
+      ({data}) => {
         let isBug = Utils.isBug(subTaskType.trim());
         let parentIssue = Modern.findFieldValue(data.issue.fields, 'parent');
 
@@ -160,13 +160,24 @@ export class Modern {
   }
 
   static getInfoList() {
-    let { subTaskID } = Modern.getIssue();
+    let {subTaskID} = Modern.getIssue();
 
-    return Modern.getIssueDetails(subTaskID).then(({ data }) => {
+    return Modern.getIssueDetails(subTaskID).then(({data}) => {
       const fixVersions = Modern.findFieldValue(data.issue.fields, 'fixVersions');
       const fixVersionsDescription = (fixVersions && fixVersions[0] && fixVersions[0]['description']) || '';
 
-      return AdditionalInfo.get({ fixVersionsDescription });
+      let priority;
+
+      const priorityField = Modern.findFieldValue(data.issue.fields, 'priority');
+
+      if (priorityField) {
+        priority = {
+          description: priorityField.name,
+          iconUlr: priorityField.iconUrl
+        };
+      }
+
+      return AdditionalInfo.get({fixVersionsDescription, priority});
     });
   }
 

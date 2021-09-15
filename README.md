@@ -4,7 +4,7 @@ Tools for jira cloud to make easier to work with git messages and branches.
 
 ## Getting Started
 
-New buttons (Prefix dropdown, Copy Branch Name and Copy Commit Message) will appears on issue detail page.
+New buttons (Prefix dropdown, Copy Branch Name, Copy Commit Message, Info dropdown) will appears on issue detail page.
 
 If You need some prefix choose one in dropdown or set none if no need prefix. 
 
@@ -12,7 +12,7 @@ Click on Copy Branch Name button to copy branch name and paste one into new crea
 
 Click on Copy Commit Message button to copy commit message template and paste one into description field on commit.
 
-Info drop down contains additional useful info (fix version description) *new v.4.0.0*
+Info dropdown contains additional useful info (fix version description, priority).
 
 ### Prerequisites
 
